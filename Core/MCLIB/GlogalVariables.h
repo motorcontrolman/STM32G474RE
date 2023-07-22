@@ -28,6 +28,9 @@
 #define SQRT3DIV2_DIV2		0.612372436f
 #define SQRT_2DIV3			0.816496581f
 #define SQRT3_DIV3			0.86602540378f
+#define DUTYUPPER			1.0f
+#define DUTYLOWER			-1.0f
+
 
 // Global Variables
 extern uint16_t gAdcValue[2];

@@ -93,11 +93,20 @@ static void dq2ab(float theta, float* dq, float* ab){
 static void Vuvw2Duty(float Vdc, float* Vuvw, float* Duty){
 	float TwoDivVH;
 
-	TwoDivVH = 0.2f; //2/VH
+	TwoDivVH = gfDivideAvoidZero(2.0f, Vdc, 1.0f);//2/VH
 	// Vuvw2Duty Vu/(VH*0.5) *
 	Duty[0] = (Vuvw[0] * TwoDivVH);
 	Duty[1] = (Vuvw[1] * TwoDivVH);
 	Duty[2] = -Duty[0] - Duty[1];
+
+	Duty[0] = gUpperLowerLimit(Duty[0], DUTYUPPER, DUTYLOWER);
+	Duty[1] = gUpperLowerLimit(Duty[1], DUTYUPPER, DUTYLOWER);
+	Duty[2] = gUpperLowerLimit(Duty[2], DUTYUPPER, DUTYLOWER);
+
+	//50% CENTER
+	Duty[0] = Duty[0] * 0.5f + 0.5f;
+	Duty[1] = Duty[1] * 0.5f + 0.5f;
+	Duty[2] = Duty[2] * 0.5f + 0.5f;
 
 }
 

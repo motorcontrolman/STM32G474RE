@@ -4,5 +4,5 @@
 ../Core/MCLIB/VectorControl.c:69:13:ab2uvw	16	static
 ../Core/MCLIB/VectorControl.c:75:13:ab2dq	32	static
 ../Core/MCLIB/VectorControl.c:84:13:dq2ab	32	static
-../Core/MCLIB/VectorControl.c:93:13:Vuvw2Duty	32	static
-../Core/MCLIB/VectorControl.c:106:13:CurrentFbControl	40	static
+../Core/MCLIB/VectorControl.c:93:13:Vuvw2Duty	40	static
+../Core/MCLIB/VectorControl.c:115:13:CurrentFbControl	40	static

@@ -5,4 +5,4 @@ VectorControl.c:69:13:ab2uvw	1
 VectorControl.c:75:13:ab2dq	1
 VectorControl.c:84:13:dq2ab	1
 VectorControl.c:93:13:Vuvw2Duty	1
-VectorControl.c:106:13:CurrentFbControl	1
+VectorControl.c:115:13:CurrentFbControl	1

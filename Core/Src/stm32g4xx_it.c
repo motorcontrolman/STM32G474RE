@@ -266,7 +266,7 @@ readCurrent(gIuvw_AD, gIuvw);
 	//writeOutputMode(outputMode);
 	//writeDuty(gDuty);
 
-	gTheta = gTheta + 100.0f * CARRIERCYCLE;
+	gTheta = gTheta + 200.0f * CARRIERCYCLE;
 	gTheta = gfWrapTheta(gTheta);
 OpenLoopTasks(2.0f, gTheta, gIuvw, gVdc, gDuty);
 //
