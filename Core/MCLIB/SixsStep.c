@@ -43,7 +43,7 @@ static void calcDuty(int8_t* outputMode, float DutyRef, float* Duty);
 
 
 // input DutyRef minus1-1, output Duty 0-1
-void sixStepTasks(float DutyRef, float leadAngle, float* Theta, float* Duty, float* outputMode){
+void sixStepTasks(float DutyRef, uint8_t leadAngleModeFlg, float leadAngle, float* Theta, float* Duty, int8_t* outputMode){
 
 	float electAnglePrusLeadAngle;
 	float wc_PLL;
@@ -84,7 +84,7 @@ void sixStepTasks(float DutyRef, float leadAngle, float* Theta, float* Duty, flo
 
 	// Hold & Calculate Whether to Use Lead Angle Control Mode.
 	sLeadAngleModeFlg_pre = sLeadAngleModeFlg;
-	sLeadAngleModeFlg = 0;//calcLeadAngleModeFlg();
+	sLeadAngleModeFlg = leadAngleModeFlg;//calcLeadAngleModeFlg();
 
 	if(sLeadAngleModeFlg == 1){
 		// Six Step Control using Electrical Angle Consider with Lead Angle
@@ -121,13 +121,17 @@ void sixStepTasks(float DutyRef, float leadAngle, float* Theta, float* Duty, flo
 	else{
 		// Control without Electrical Angle ( Use Only Hall Signals )
 		calcOutputMode(sVoltageMode, sOutputMode);
+		sElectAngleEstimate = sElectAngleActual;
 	}
 
 	// Output Voltage
 	calcDuty(sOutputMode, DutyRef, Duty);
 
 	// Output Static Signals
-	outputMode = sOutputMode;
+	outputMode[0] = sOutputMode[0];
+	outputMode[1] = sOutputMode[1];
+	outputMode[2] = sOutputMode[2];
+
 	*Theta = sElectAngleEstimate;
 
 
@@ -248,9 +252,9 @@ static uint8_t calcLeadAngleModeFlg(void){
 	uint8_t leadAngleModeFlg;
 
 	if(gButton1 == 0)
-		leadAngleModeFlg = 1;
-	else
 		leadAngleModeFlg = 0;
+	else
+		leadAngleModeFlg = 1;
 
 	return leadAngleModeFlg;
 }

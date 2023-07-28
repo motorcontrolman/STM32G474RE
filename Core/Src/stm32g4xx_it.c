@@ -228,7 +228,9 @@ void ADC1_2_IRQHandler(void)
 	float ErectFreqRef = 100.0f;
 	float ErectFreqErr;
 	float theta_tmp;
-  uint8_t outputMode[3];
+	float Idq_ref[2];
+	uint8_t leadAngleModeFlg;
+  int8_t outputMode[3];
   /* USER CODE END ADC1_2_IRQn 0 */
   HAL_ADC_IRQHandler(&hadc1);
   /* USER CODE BEGIN ADC1_2_IRQn 1 */
@@ -237,16 +239,19 @@ void ADC1_2_IRQHandler(void)
 	//read IO signals
 	gButton1 = readButton1();
 	gVolume = readVolume();
-readCurrent(gIuvw_AD, gIuvw);
+	readCurrent(gIuvw_AD, gIuvw);
 	gVdc = readVdc();
+	gTwoDivVdc = gfDivideAvoidZero(2.0f, gVdc, 1.0f);
 
 	//DutyRef Calculation
-	if ( gButton1 == 1 )
+	//if ( gButton1 == 1 )
 	  rotDir = 1;
-	else
-	  rotDir = -1;
+	//else
+	//  rotDir = -1;
 
 
+	  Idq_ref[0] = 0;
+	  Idq_ref[1] = gVolume;
 	/*// Speed Control
 	ErectFreqRef = 200.0f * gVolume;
 	ErectFreqErr = ErectFreqRef - gElectFreq;
@@ -262,13 +267,34 @@ readCurrent(gIuvw_AD, gIuvw);
 
 	//Input DutyRef, Lead Angle Output Duty
 	//sixStepTasks(gDutyRef, 0.0f, &gTheta, gDuty, outputMode);
-	//write IO signals
-	//writeOutputMode(outputMode);
-	//writeDuty(gDuty);
+	if (gElectFreq > 50)
+		leadAngleModeFlg = 1;
+	else
+		leadAngleModeFlg = 0;
 
-	gTheta = gTheta + 200.0f * CARRIERCYCLE;
-	gTheta = gfWrapTheta(gTheta);
-OpenLoopTasks(2.0f, gTheta, gIuvw, gVdc, gDuty);
+	sixStepTasks(gDutyRef, leadAngleModeFlg, 0.0f, &theta_tmp, gDuty, outputMode);
+	gTheta = theta_tmp;
+	//write IO signals
+
+	if (leadAngleModeFlg == 0){
+	writeOutputMode(outputMode);
+	writeDuty(gDuty);
+	}
+
+
+	//gTheta = gTheta + 200.0f * CARRIERCYCLE;
+	//gTheta = gfWrapTheta(gTheta);
+
+
+	//if ( gButton1 == 0 )
+	//	OpenLoopTasks(gDutyRef * 8.0f, gTheta, gIuvw, gTwoDivVdc, gDuty, outputMode);
+	//else
+		VectorControlTasks(Idq_ref, gTheta, gIuvw, gVdc, gTwoDivVdc, gDuty, outputMode);
+
+	if (leadAngleModeFlg == 1){
+	writeOutputMode(outputMode);
+	writeDuty(gDuty);
+	}
 //
 //VectorControlTasks(Idq_ref, gTheta, gIuvw, gVdc, gDuty);
 

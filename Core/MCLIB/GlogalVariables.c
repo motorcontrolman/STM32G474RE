@@ -20,6 +20,7 @@ uint32_t gInputCaptureCnt_pre;
 float gElectFreq = 0;
 float gTheta = 0;
 float gVdc;
+float gTwoDivVdc;
 float gVolume;
 float gIuvw[3];
 uint16_t gIuvw_AD[3];

@@ -14,7 +14,7 @@
 #define OUTPUTMODE_OPEN 		0
 #define OUTPUTMODE_POSITIVE 	1
 #define OUTPUTMODE_NEGATIVE 	-1
-#define SYSTEMCLOCKFREQ 		17000000.0f //for G474
+#define SYSTEMCLOCKFREQ 		170000000.0f //for G474
 #define SYSTEMCLOCKCYCLE		1 / SYSTEMCLOCKFREQ
 #define CARRIERFREQ				17000.0f
 #define CARRIERCYCLE 			1 / CARRIERFREQ //0.00005555555f
@@ -30,6 +30,11 @@
 #define SQRT3_DIV3			0.86602540378f
 #define DUTYUPPER			1.0f
 #define DUTYLOWER			-1.0f
+#define IU_ADOffSET			1926
+#define IV_ADOffSET			1924
+#define IW_ADOffSET			1917
+#define AD2CURRENT			-0.00193586253f
+#define AD2VOLTAGE			0.0154305f; // 1/(9.31/(9.31+169)*4096/3.3V)
 
 
 // Global Variables
@@ -45,6 +50,7 @@ extern uint32_t gInputCaptureCnt_pre;
 extern float gElectFreq;
 extern float gTheta;
 extern float gVdc;
+extern float gTwoDivVdc;
 extern float gVolume;
 extern float gIuvw[3];
 extern uint16_t gIuvw_AD[3];
