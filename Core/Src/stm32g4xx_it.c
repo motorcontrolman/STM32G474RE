@@ -62,6 +62,7 @@
 /* External variables --------------------------------------------------------*/
 extern DMA_HandleTypeDef hdma_adc1;
 extern ADC_HandleTypeDef hadc1;
+extern DMA_HandleTypeDef hdma_dac1_ch1;
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -219,6 +220,20 @@ void DMA1_Channel1_IRQHandler(void)
 }
 
 /**
+  * @brief This function handles DMA1 channel2 global interrupt.
+  */
+void DMA1_Channel2_IRQHandler(void)
+{
+  /* USER CODE BEGIN DMA1_Channel2_IRQn 0 */
+
+  /* USER CODE END DMA1_Channel2_IRQn 0 */
+  HAL_DMA_IRQHandler(&hdma_dac1_ch1);
+  /* USER CODE BEGIN DMA1_Channel2_IRQn 1 */
+
+  /* USER CODE END DMA1_Channel2_IRQn 1 */
+}
+
+/**
   * @brief This function handles ADC1 and ADC2 global interrupt.
   */
 void ADC1_2_IRQHandler(void)
@@ -228,8 +243,10 @@ void ADC1_2_IRQHandler(void)
 	float ErectFreqRef = 100.0f;
 	float ErectFreqErr;
 	float theta_tmp;
+	float electAngVelo_tmp;
 	float Idq_ref[2];
 	uint8_t leadAngleModeFlg;
+	uint8_t flgFB;
   int8_t outputMode[3];
   /* USER CODE END ADC1_2_IRQn 0 */
   HAL_ADC_IRQHandler(&hadc1);
@@ -240,7 +257,7 @@ void ADC1_2_IRQHandler(void)
 	gButton1 = readButton1();
 	gVolume = readVolume();
 	readCurrent(gIuvw_AD, gIuvw);
-	gVdc = readVdc();
+	gVdc = 20.0;//readVdc();
 	gTwoDivVdc = gfDivideAvoidZero(2.0f, gVdc, 1.0f);
 
 	//DutyRef Calculation
@@ -250,51 +267,75 @@ void ADC1_2_IRQHandler(void)
 	//  rotDir = -1;
 
 
-	  Idq_ref[0] = 0;
-	  Idq_ref[1] = gVolume;
+	  Idq_ref[0] = 0.0f;//gVolume * 2;//-0.0f;//gVolume;//0.05f;
+	  Idq_ref[1] = 0.3f * gVolume;
 	/*// Speed Control
 	ErectFreqRef = 200.0f * gVolume;
 	ErectFreqErr = ErectFreqRef - gElectFreq;
 	gDutyRef += ErectFreqErr * 0.0000001f;
 	*/
 
-
-	gDutyRef = (float)rotDir * gVolume;
-	if (gDutyRef > 1.0f) gDutyRef = 1.0f;
-	if (gDutyRef < -1.0f) gDutyRef = -1.0f;
-
-	//gDutyRef = 0.5f;
-
-	//Input DutyRef, Lead Angle Output Duty
-	//sixStepTasks(gDutyRef, 0.0f, &gTheta, gDuty, outputMode);
-	if (gElectFreq > 50)
-		leadAngleModeFlg = 1;
-	else
+	// Sequence Control
+	if(gInitCnt < 500){
+		gInitCnt++;
+		gPosMode = POSMODE_HALL;
+		gDrvMode = DRVMODE_OFF;
 		leadAngleModeFlg = 0;
-
-	sixStepTasks(gDutyRef, leadAngleModeFlg, 0.0f, &theta_tmp, gDuty, outputMode);
-	gTheta = theta_tmp;
-	//write IO signals
-
-	if (leadAngleModeFlg == 0){
-	writeOutputMode(outputMode);
-	writeDuty(gDuty);
+		flgFB = 0;
+	}
+	else if (gElectFreq < 100.0f){
+		gPosMode = POSMODE_HALL;
+		gDrvMode = DRVMODE_OPENLOOP;
+		leadAngleModeFlg = 0;
+		flgFB = 0;
+	}
+	else if(gElectFreq < 200.0){
+		gPosMode = POSMODE_HALL_PLL;
+		gDrvMode = DRVMODE_OPENLOOP;
+		leadAngleModeFlg = 1;
+		flgFB = 0;
+	}
+	else{
+		gPosMode = POSMODE_HALL_PLL;
+		gDrvMode = DRVMODE_VECTORCONTROL;
+		leadAngleModeFlg = 1;
+		flgFB = 1;
 	}
 
+	// MotorDrive
+	if(gDrvMode == DRVMODE_OFF){
+		outputMode[0] = OUTPUTMODE_OPEN;
+		outputMode[1] = OUTPUTMODE_OPEN;
+		outputMode[2] = OUTPUTMODE_OPEN;
+		gDuty[0] = 0.0f;
+		gDuty[1] = 0.0f;
+		gDuty[2] = 0.0f;
 
-	//gTheta = gTheta + 200.0f * CARRIERCYCLE;
-	//gTheta = gfWrapTheta(gTheta);
+	}
+	else{
+		gDutyRef = 0.0f;
+		sixStepTasks(gDutyRef, leadAngleModeFlg, 0.0f, &theta_tmp, &electAngVelo_tmp, gDuty, outputMode);
+		gTheta = theta_tmp - gVolume;
+		gElectAngVelo = electAngVelo_tmp;
+		//gTheta_DAC = 1000;//(gTheta + PI) * ONEDIVTWOPI * 4096;
+
+		//write IO signals
+		//gTheta = gTheta + 2000.0f * gVolume * CARRIERCYCLE;
+		//gTheta = gfWrapTheta(gTheta);
+
+		VectorControlTasks(Idq_ref, gTheta, gElectAngVelo, gIuvw, gVdc, gTwoDivVdc, flgFB, gDuty, outputMode);
+	}
+
+	writeOutputMode(outputMode);
+	writeDuty(gDuty);
+
+
 
 
 	//if ( gButton1 == 0 )
 	//	OpenLoopTasks(gDutyRef * 8.0f, gTheta, gIuvw, gTwoDivVdc, gDuty, outputMode);
 	//else
-		VectorControlTasks(Idq_ref, gTheta, gIuvw, gVdc, gTwoDivVdc, gDuty, outputMode);
 
-	if (leadAngleModeFlg == 1){
-	writeOutputMode(outputMode);
-	writeDuty(gDuty);
-	}
 //
 //VectorControlTasks(Idq_ref, gTheta, gIuvw, gVdc, gDuty);
 

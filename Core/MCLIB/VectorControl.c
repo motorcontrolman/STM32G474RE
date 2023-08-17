@@ -14,8 +14,10 @@
 
 float sIab[2];
 float sIdq[2];
+float sIdq_ref_1000[2];
 float sIdq_1000[2];
 float sVdq[2];
+float sVdq_i[2];
 float sVab[2];
 float sVuvw[3];
 float sVamp;
@@ -28,27 +30,41 @@ static void dq2ab(float theta, float *dq, float *ab);
 static float calcAmpFromVect(float* Vect);
 static float calcModFromVamp(float Vamp, float twoDivVdc);
 static void Vuvw2Duty(float twoDivVdc, float *Vuvw, float *Duty);
-static void CurrentFbControl(float *Igd_ref, float *Igd, float Vdc, float *Vgd, float* Vamp);
+static void CurrentFbControl(float *Igd_ref, float *Igd, float electAngVelo, float Vdc, float *Vgd, float* Vamp);
 
-void VectorControlTasks(float *Idq_ref, float theta, float *Iuvw, float Vdc, float twoDivVdc, float* Duty, int8_t* outputMode){
-	outputMode[0] = OUTPUTMODE_POSITIVE;
-	outputMode[1] = OUTPUTMODE_POSITIVE;
-	outputMode[2] = OUTPUTMODE_POSITIVE;
+void VectorControlTasks(float *Idq_ref, float theta, float electAngVelo, float *Iuvw, float Vdc, float twoDivVdc, uint8_t flgFB, float* Duty, int8_t* outputMode){
+
+	if ( flgFB == 0 ){
+			OpenLoopTasks(gVolume * 12.24f, theta, Iuvw, twoDivVdc, Duty, outputMode);
+			sVdq[0] = 0.0f;
+			sVdq[1] = gVolume * 12.24f;
+			sVdq_i[0] = 0.0f;
+			sVdq_i[1] = 0.0f;
+		}
+	else{
+
+		outputMode[0] = OUTPUTMODE_POSITIVE;
+		outputMode[1] = OUTPUTMODE_POSITIVE;
+		outputMode[2] = OUTPUTMODE_POSITIVE;
 
 
-	uvw2ab(gIuvw, sIab);
-	ab2dq(theta, sIab, sIdq);
-	CurrentFbControl(Idq_ref, sIdq, Vdc, sVdq, &sVamp);
+		uvw2ab(gIuvw, sIab);
+		ab2dq(theta, sIab, sIdq);
 
-	//sVamp = calcAmpFromVect(sVdq);
+		CurrentFbControl(Idq_ref, sIdq, electAngVelo, Vdc, sVdq, &sVamp);
 
-	sMod = calcModFromVamp(sVamp, gTwoDivVdc);
-	dq2ab(theta, sVdq, sVab);
-	ab2uvw(sVab, sVuvw);
-	Vuvw2Duty(twoDivVdc, sVuvw, Duty);
+		//sVamp = calcAmpFromVect(sVdq);
 
-	sIdq_1000[0] = sIdq[0] * 1000.0f;
-	sIdq_1000[1] = sIdq[1] * 1000.0f;
+		sMod = calcModFromVamp(sVamp, gTwoDivVdc);
+		dq2ab(theta, sVdq, sVab);
+		ab2uvw(sVab, sVuvw);
+		Vuvw2Duty(twoDivVdc, sVuvw, Duty);
+
+		sIdq_ref_1000[0] = Idq_ref[0] * 1000.0f;
+		sIdq_ref_1000[1] = Idq_ref[1] * 1000.0f;
+		sIdq_1000[0] = sIdq[0] * 1000.0f;
+		sIdq_1000[1] = sIdq[1] * 1000.0f;
+	}
 
 }
 
@@ -64,6 +80,9 @@ void OpenLoopTasks(float VamRef, float theta, float *Iuvw, float twoDivVdc, floa
 	dq2ab(theta, sVdq, sVab);
 	ab2uvw(sVab, sVuvw);
 	Vuvw2Duty(twoDivVdc, sVuvw, Duty);
+
+	sIdq_1000[0] = sIdq[0] * 1000.0f;
+	sIdq_1000[1] = sIdq[1] * 1000.0f;
 }
 
 static void uvw2ab(float* uvw, float* ab){
@@ -129,20 +148,29 @@ static void Vuvw2Duty(float twoDivVdc, float* Vuvw, float* Duty){
 
 
 
-static void CurrentFbControl(float* Igd_ref, float* Igd, float Vdc, float* Vgd, float* Vamp){
+static void CurrentFbControl(float* Igd_ref, float* Igd, float electAngVelo, float Vdc, float* Vgd, float* Vamp){
 	float Ierr[2];
+	float Kp;
 	float Kig;
 	float Kid;
 	float VampLimit;
 	float Vphase;
+	float wc;
 
-	Kig = 0.001;
-	Kid = 0.001;
+	wc = 50.0f * TWOPI;
+
+	Kp = La * wc;
+	Kig = Ra * wc * CARRIERCYCLE;
+	Kid = Kig;
 
 	Ierr[0] = Igd_ref[0] - Igd[0];
 	Ierr[1] = Igd_ref[1] - Igd[1];
-	Vgd[0] = Vgd[0] + Kig * Ierr[0];
-	Vgd[1] = Vgd[1] + Kid * Ierr[1];
+
+	sVdq_i[0] += Kig * Ierr[0];
+	sVdq_i[1] += Kid * Ierr[1];
+
+	Vgd[0] = Kp * Ierr[0] + sVdq_i[0];
+	Vgd[1] = Ke * electAngVelo + Kp * Ierr[1] + sVdq_i[1];// + Vgd[1] + Kid * Ierr[1] + ;
 
 	Vphase = atan2f(Vgd[1], Vgd[0]);
 
@@ -151,7 +179,9 @@ static void CurrentFbControl(float* Igd_ref, float* Igd, float Vdc, float* Vgd, 
 	VampLimit = Vdc * SQRT3DIV2_DIV2;
 	if( *Vamp > VampLimit ){
 		Vgd[0] = VampLimit * cosf(Vphase);
+		sVdq_i[0] = Vgd[0];
 		Vgd[1] = VampLimit * sinf(Vphase);
+		sVdq_i[1] = Vgd[1] -  Ke * electAngVelo;
 
 	}
 }

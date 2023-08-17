@@ -1,8 +1,8 @@
-SixsStep.c:46:6:sixStepTasks	5
-SixsStep.c:166:16:calcVoltageMode	7
-SixsStep.c:199:13:calcRotDirFromVoltageMode	4
-SixsStep.c:216:14:calcElectAngleFromVoltageMode	7
-SixsStep.c:251:16:calcLeadAngleModeFlg	2
-SixsStep.c:262:16:calcVoltageModeFromElectAngle	13
-SixsStep.c:296:13:calcOutputMode	7
-SixsStep.c:337:13:calcDuty	5
+SixsStep.c:47:6:sixStepTasks	7
+SixsStep.c:178:16:calcVoltageMode	7
+SixsStep.c:211:13:calcRotDirFromVoltageMode	4
+SixsStep.c:228:14:calcElectAngleFromVoltageMode	7
+SixsStep.c:263:16:calcLeadAngleModeFlg	2
+SixsStep.c:274:16:calcVoltageModeFromElectAngle	13
+SixsStep.c:308:13:calcOutputMode	7
+SixsStep.c:349:13:calcDuty	5

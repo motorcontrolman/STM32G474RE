@@ -12,7 +12,6 @@
 #include "SignalReadWrite.h"
 
 
-
 uint16_t Bemf_AD[3];
 
 uint8_t readButton1(void){
@@ -60,7 +59,7 @@ float readVolume(void){
 	float Volume;
 	uint16_t Volume_ad = gAdcValue[1];
 
-	Volume = Volume_ad * 0.0002442f;
+	Volume = ((int16_t)Volume_ad - 99)* 0.0002442f;
 	//Volume = ((int16_t)Volume_ad - 856) * 0.000573394f;
 	return Volume;
 }

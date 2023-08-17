@@ -23,6 +23,7 @@
 #define BITMAX32HALF 			2147483648
 #define PI 3.141592654f
 #define TWOPI 6.283185307f
+#define ONEDIVTWOPI 0.159154943f
 #define PIDIV3 1.047197551f
 #define PIDIV6 0.523598776f
 #define SQRT3DIV2_DIV2		0.612372436f
@@ -30,11 +31,26 @@
 #define SQRT3_DIV3			0.86602540378f
 #define DUTYUPPER			1.0f
 #define DUTYLOWER			-1.0f
-#define IU_ADOffSET			1926
-#define IV_ADOffSET			1924
-#define IW_ADOffSET			1917
-#define AD2CURRENT			-0.00193586253f
+#define IU_ADOffSET			1996//1926
+#define IV_ADOffSET			2001//1924
+#define IW_ADOffSET			2024//1917
+//#define AD2CURRENT			-0.00193586253f // for IHM07M1
+#define AD2CURRENT			-0.014767822f // for DRV8302 tekito
 #define AD2VOLTAGE			0.0154305f; // 1/(9.31/(9.31+169)*4096/3.3V)
+
+#define POSMODE_HALL				0
+#define POSMODE_HALL_PLL			1
+#define POSMODE_SENSORLESS			2
+#define DRVMODE_OFF					0
+#define DRVMODE_SIXSTEP				1
+#define DRVMODE_OPENLOOP			2
+#define DRVMODE_VECTORCONTROL		3
+
+
+
+#define Ra					1.680596498f
+#define La					0.00048f
+#define Ke					1.03E-03f
 
 
 // Global Variables
@@ -49,6 +65,8 @@ extern uint32_t gInputCaptureCnt_pre;
 
 extern float gElectFreq;
 extern float gTheta;
+extern float gElectAngVelo;
+extern uint32_t gTheta_DAC;
 extern float gVdc;
 extern float gTwoDivVdc;
 extern float gVolume;
@@ -60,6 +78,9 @@ extern int8_t gOutputMode[3];
 extern float gDutyRef;
 extern float gDuty[3];
 
+extern uint8_t gPosMode;
+extern uint8_t gDrvMode;
+extern uint16_t gInitCnt;
 
 
 #endif /* MCLIB_GLOGALVARIABLES_H_ */

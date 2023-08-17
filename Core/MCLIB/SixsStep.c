@@ -18,6 +18,7 @@
 int8_t sOutputMode[3];
 uint8_t sVoltageMode;
 uint8_t sVoltageMode_pre;
+uint16_t sNoInputCaptureCnt = 0;
 uint8_t sVoltageModeChangedFlg;
 uint8_t sVoltageModeModify;
 int8_t sRotDir = 0;
@@ -43,7 +44,7 @@ static void calcDuty(int8_t* outputMode, float DutyRef, float* Duty);
 
 
 // input DutyRef minus1-1, output Duty 0-1
-void sixStepTasks(float DutyRef, uint8_t leadAngleModeFlg, float leadAngle, float* Theta, float* Duty, int8_t* outputMode){
+void sixStepTasks(float DutyRef, uint8_t leadAngleModeFlg, float leadAngle, float* Theta, float* electAngVelo, float* Duty, int8_t* outputMode){
 
 	float electAnglePrusLeadAngle;
 	float wc_PLL;
@@ -62,12 +63,22 @@ void sixStepTasks(float DutyRef, uint8_t leadAngleModeFlg, float leadAngle, floa
 	// Calculate Electrical Freq From Input Capture Count
 	if(gInputCaptureCnt != gInputCaptureCnt_pre){
 		timeInterval = readTimeInterval(gInputCaptureCnt, gInputCaptureCnt_pre);
-		gElectFreq = gfDivideAvoidZero(1.0f, timeInterval, SYSTEMCLOCKCYCLE);
+		if( timeInterval > 0.0001f)
+			gElectFreq = gfDivideAvoidZero(1.0f, timeInterval, SYSTEMCLOCKCYCLE);
+
+		sNoInputCaptureCnt = 0;
 	}
+	else if(sNoInputCaptureCnt < 1000)
+		sNoInputCaptureCnt ++;
+	else
+		gElectFreq = 0;
+
 
 	// Calculate PLL Gain based on Electrical Frequency
-	wc_PLL = gElectFreq * 0.5f * TWOPI;
-	Ts_PLL = 1.0f / (gElectFreq * 6.0f);
+	wc_PLL = sElectAngVeloEstimate * 0.5f;//gElectFreq * 0.5f * TWOPI;
+	//if (wc_PLL > 6000)
+	//	wc_PLL = 6000;
+	Ts_PLL = 1.0f / (sElectAngVeloEstimate * ONEDIVTWOPI * 6.0f);
 	Kp_PLL = wc_PLL;
 	Ki_PLL = 0.2f * wc_PLL * wc_PLL * Ts_PLL;
 
@@ -122,6 +133,7 @@ void sixStepTasks(float DutyRef, uint8_t leadAngleModeFlg, float leadAngle, floa
 		// Control without Electrical Angle ( Use Only Hall Signals )
 		calcOutputMode(sVoltageMode, sOutputMode);
 		sElectAngleEstimate = sElectAngleActual;
+		sElectAngVeloEstimate = gElectFreq * TWOPI;
 	}
 
 	// Output Voltage
@@ -133,7 +145,7 @@ void sixStepTasks(float DutyRef, uint8_t leadAngleModeFlg, float leadAngle, floa
 	outputMode[2] = sOutputMode[2];
 
 	*Theta = sElectAngleEstimate;
-
+	*electAngVelo = sElectAngVeloEstimate;
 
 }
 
