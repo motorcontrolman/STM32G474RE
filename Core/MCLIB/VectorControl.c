@@ -22,6 +22,8 @@ float sVab[2];
 float sVuvw[3];
 float sVamp;
 float sMod;
+float sEdq[2];
+float sAngleErr;
 
 static void uvw2ab(float *uvw, float *ab);
 static void ab2uvw(float *ab, float *uvw);
@@ -52,10 +54,12 @@ void VectorControlTasks(float *Idq_ref, float theta, float electAngVelo, float *
 		ab2dq(theta, sIab, sIdq);
 
 		CurrentFbControl(Idq_ref, sIdq, electAngVelo, Vdc, sVdq, &sVamp);
-
-		//sVamp = calcAmpFromVect(sVdq);
-
 		sMod = calcModFromVamp(sVamp, gTwoDivVdc);
+
+		sEdq[0] = sVdq[0] - Ra * sIdq[0] + La * electAngVelo * sIdq[1];
+		sEdq[1] = sVdq[1] - Ra * sIdq[1] - La * electAngVelo * sIdq[0];
+		sAngleErr = atan2f(-1.0f * sEdq[0], sEdq[1]);
+
 		dq2ab(theta, sVdq, sVab);
 		ab2uvw(sVab, sVuvw);
 		Vuvw2Duty(twoDivVdc, sVuvw, Duty);
