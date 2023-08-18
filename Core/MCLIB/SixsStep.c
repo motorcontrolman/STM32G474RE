@@ -68,7 +68,7 @@ void sixStepTasks(float DutyRef, uint8_t leadAngleModeFlg, float leadAngle, floa
 
 		sNoInputCaptureCnt = 0;
 	}
-	else if(sNoInputCaptureCnt < 1000)
+	else if(sNoInputCaptureCnt < 2000)
 		sNoInputCaptureCnt ++;
 	else
 		gElectFreq = 0;

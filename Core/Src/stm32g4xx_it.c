@@ -257,7 +257,7 @@ void ADC1_2_IRQHandler(void)
 	gButton1 = readButton1();
 	gVolume = readVolume();
 	readCurrent(gIuvw_AD, gIuvw);
-	gVdc = 20.0;//readVdc();
+	gVdc = readVdc();
 	gTwoDivVdc = gfDivideAvoidZero(2.0f, gVdc, 1.0f);
 
 	//DutyRef Calculation
@@ -268,7 +268,7 @@ void ADC1_2_IRQHandler(void)
 
 
 	  Idq_ref[0] = 0.0f;//gVolume * 2;//-0.0f;//gVolume;//0.05f;
-	  Idq_ref[1] = 0.3f * gVolume;
+	  Idq_ref[1] = 10.0f * gVolume;
 	/*// Speed Control
 	ErectFreqRef = 200.0f * gVolume;
 	ErectFreqErr = ErectFreqRef - gElectFreq;
@@ -283,13 +283,13 @@ void ADC1_2_IRQHandler(void)
 		leadAngleModeFlg = 0;
 		flgFB = 0;
 	}
-	else if (gElectFreq < 100.0f){
+	else if (gElectFreq < 10.0f){
 		gPosMode = POSMODE_HALL;
 		gDrvMode = DRVMODE_OPENLOOP;
 		leadAngleModeFlg = 0;
 		flgFB = 0;
 	}
-	else if(gElectFreq < 200.0){
+	else if(gElectFreq < 20.0f){
 		gPosMode = POSMODE_HALL_PLL;
 		gDrvMode = DRVMODE_OPENLOOP;
 		leadAngleModeFlg = 1;
@@ -324,6 +324,7 @@ void ADC1_2_IRQHandler(void)
 		//gTheta = gfWrapTheta(gTheta);
 
 		VectorControlTasks(Idq_ref, gTheta, gElectAngVelo, gIuvw, gVdc, gTwoDivVdc, flgFB, gDuty, outputMode);
+		//OpenLoopTasks(0.75f, gTheta, gIuvw, gTwoDivVdc, gDuty, outputMode);
 	}
 
 	writeOutputMode(outputMode);

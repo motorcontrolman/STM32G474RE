@@ -161,7 +161,7 @@ static void CurrentFbControl(float* Igd_ref, float* Igd, float electAngVelo, flo
 	float Vphase;
 	float wc;
 
-	wc = 50.0f * TWOPI;
+	wc = 10.0f * TWOPI;
 
 	Kp = La * wc;
 	Kig = Ra * wc * CARRIERCYCLE;
