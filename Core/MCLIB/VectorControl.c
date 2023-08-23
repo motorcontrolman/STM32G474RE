@@ -56,19 +56,20 @@ void VectorControlTasks(float *Idq_ref, float theta, float electAngVelo, float *
 		CurrentFbControl(Idq_ref, sIdq, electAngVelo, Vdc, sVdq, &sVamp);
 		sMod = calcModFromVamp(sVamp, gTwoDivVdc);
 
+		/*
 		sEdq[0] = sVdq[0] - Ra * sIdq[0] + La * electAngVelo * sIdq[1];
 		sEdq[1] = sVdq[1] - Ra * sIdq[1] - La * electAngVelo * sIdq[0];
 		sAngleErr = atan2f(-1.0f * sEdq[0], sEdq[1]);
+		*/
 
 		dq2ab(theta, sVdq, sVab);
 		ab2uvw(sVab, sVuvw);
 		Vuvw2Duty(twoDivVdc, sVuvw, Duty);
-
-		sIdq_ref_1000[0] = Idq_ref[0] * 1000.0f;
-		sIdq_ref_1000[1] = Idq_ref[1] * 1000.0f;
-		sIdq_1000[0] = sIdq[0] * 1000.0f;
-		sIdq_1000[1] = sIdq[1] * 1000.0f;
 	}
+	sIdq_ref_1000[0] = Idq_ref[0] * 1000.0f;
+	sIdq_ref_1000[1] = Idq_ref[1] * 1000.0f;
+	sIdq_1000[0] = sIdq[0] * 1000.0f;
+	sIdq_1000[1] = sIdq[1] * 1000.0f;
 
 }
 
@@ -84,9 +85,6 @@ void OpenLoopTasks(float VamRef, float theta, float *Iuvw, float twoDivVdc, floa
 	dq2ab(theta, sVdq, sVab);
 	ab2uvw(sVab, sVuvw);
 	Vuvw2Duty(twoDivVdc, sVuvw, Duty);
-
-	sIdq_1000[0] = sIdq[0] * 1000.0f;
-	sIdq_1000[1] = sIdq[1] * 1000.0f;
 }
 
 static void uvw2ab(float* uvw, float* ab){

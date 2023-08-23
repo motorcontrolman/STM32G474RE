@@ -242,6 +242,7 @@ void ADC1_2_IRQHandler(void)
 	int8_t rotDir;
 	float ErectFreqRef = 100.0f;
 	float ErectFreqErr;
+	uint8_t voltageMode_tmp;
 	float theta_tmp;
 	float electAngVelo_tmp;
 	float Idq_ref[2];
@@ -289,7 +290,7 @@ void ADC1_2_IRQHandler(void)
 		leadAngleModeFlg = 0;
 		flgFB = 0;
 	}
-	else if(gElectFreq < 20.0f){
+	else if(gElectFreq < 40.0f){
 		gPosMode = POSMODE_HALL_PLL;
 		gDrvMode = DRVMODE_OPENLOOP;
 		leadAngleModeFlg = 1;
@@ -314,9 +315,10 @@ void ADC1_2_IRQHandler(void)
 	}
 	else{
 		gDutyRef = 0.0f;
-		sixStepTasks(gDutyRef, leadAngleModeFlg, 0.0f, &theta_tmp, &electAngVelo_tmp, gDuty, outputMode);
-		gTheta = theta_tmp - gVolume;
-		gElectAngVelo = electAngVelo_tmp;
+		//sixStepTasks(gDutyRef, leadAngleModeFlg, 0.0f, &theta_tmp, &electAngVelo_tmp, gDuty, outputMode);
+		calcElectAngle(leadAngleModeFlg, &voltageMode_tmp, &theta_tmp, &electAngVelo_tmp);
+		gTheta = theta_tmp;
+		//gElectAngVelo = electAngVelo_tmp;
 		//gTheta_DAC = 1000;//(gTheta + PI) * ONEDIVTWOPI * 4096;
 
 		//write IO signals
@@ -324,7 +326,7 @@ void ADC1_2_IRQHandler(void)
 		//gTheta = gfWrapTheta(gTheta);
 
 		VectorControlTasks(Idq_ref, gTheta, gElectAngVelo, gIuvw, gVdc, gTwoDivVdc, flgFB, gDuty, outputMode);
-		//OpenLoopTasks(0.75f, gTheta, gIuvw, gTwoDivVdc, gDuty, outputMode);
+		//OpenLoopTasks(0.5f, gTheta, gIuvw, gTwoDivVdc, gDuty, outputMode);
 	}
 
 	writeOutputMode(outputMode);
