@@ -15,7 +15,7 @@
 uint16_t Bemf_AD[3];
 
 uint8_t readButton1(void){
-	uint8_t B1;
+	volatile uint8_t B1;
 
 	B1 = HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin);
 	return B1;
@@ -59,8 +59,8 @@ float readVolume(void){
 	float Volume;
 	uint16_t Volume_ad = gAdcValue[1];
 
-	//Volume = ((int16_t)Volume_ad - 99)* 0.0002442f;
-	Volume = ((int16_t)Volume_ad - 950) * 0.000573394f;
+	Volume = ((int16_t)Volume_ad - 99)* 0.0002442f;
+	//Volume = ((int16_t)Volume_ad - 950) * 0.000573394f;
 	if( Volume < 0) Volume = 0;
 	return Volume;
 }

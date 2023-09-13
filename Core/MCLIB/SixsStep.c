@@ -15,31 +15,31 @@
 #include "ControlFunctions.h"
 
 // Static Variables
-int8_t sOutputMode[3];
-uint8_t sVoltageMode;
-uint8_t sVoltageMode_pre;
-uint16_t sNoInputCaptureCnt = 0;
-uint8_t sVoltageModeChangedFlg;
-int8_t sRotDir = 0;
-uint8_t sFlgPLL;
-uint8_t sFlgPLL_pre;
+static int8_t sOutputMode[3];
+static uint8_t sVoltageMode;
+static uint8_t sVoltageMode_pre;
+static uint16_t sNoInputCaptureCnt = 0;
+static uint8_t sVoltageModeChangedFlg;
+static int8_t sRotDir = 0;
+static uint8_t sFlgPLL;
+static uint8_t sFlgPLL_pre;
 
 
-float sElectAngleActual;
-float sElectAngleActual_pre;
-float sElectAngleEstimate = 0.0f;
-float sIntegral_ElectAngleErr_Ki = 0.0f;
-float sElectAngVeloEstimate;
-float sElectAngleErr;
+static float sElectAngleActual;
+static float sElectAngleActual_pre;
+static float sElectAngleEstimate = 0.0f;
+static float sIntegral_ElectAngleErr_Ki = 0.0f;
+static float sElectAngVeloEstimate;
+static float sElectAngleErr;
 
 // Static Functons
-static uint8_t calcVoltageMode(uint8_t* Hall);
-static void calcRotDirFromVoltageMode(uint8_t voltageMode_pre, uint8_t voltageMode, int8_t* rotDir);
-static float calcElectAngleFromVoltageMode(uint8_t voltageMode, int8_t rotDir);
-static uint8_t calcLeadAngleModeFlg(void);
-static uint8_t calcVoltageModeFromElectAngle(float electAngle);
-static void calcOutputMode(uint8_t voltageMode, int8_t* outputMode);
-static void calcDuty(int8_t* outputMode, float DutyRef, float* Duty);
+static inline uint8_t calcVoltageMode(uint8_t* Hall);
+static inline void calcRotDirFromVoltageMode(uint8_t voltageMode_pre, uint8_t voltageMode, int8_t* rotDir);
+static inline float calcElectAngleFromVoltageMode(uint8_t voltageMode, int8_t rotDir);
+static inline uint8_t calcLeadAngleModeFlg(void);
+static inline uint8_t calcVoltageModeFromElectAngle(float electAngle);
+static inline void calcOutputMode(uint8_t voltageMode, int8_t* outputMode);
+static inline void calcDuty(int8_t* outputMode, float DutyRef, float* Duty);
 
 /*
 void sixStepTasks(float DutyRef, uint8_t voltageMode, uint8_t leadAngleModeFlg, float electAngle, float leadAngle, float* Duty, int8_t* outputMode){
@@ -100,7 +100,7 @@ void calcElectAngle(uint8_t flgPLL, uint8_t voltageMode, float* electAngle, floa
 	// Calculate Electrical Freq From Input Capture Count
 	if(gInputCaptureCnt != gInputCaptureCnt_pre){
 		timeInterval = readTimeInterval(gInputCaptureCnt, gInputCaptureCnt_pre);
-		if( timeInterval > 0.0001f)
+		if( timeInterval > 0.0002f)
 			gElectFreq = gfDivideAvoidZero(1.0f, timeInterval, SYSTEMCLOCKCYCLE);
 
 		sNoInputCaptureCnt = 0;

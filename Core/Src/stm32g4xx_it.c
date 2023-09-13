@@ -258,7 +258,7 @@ void ADC1_2_IRQHandler(void)
 	gButton1 = readButton1();
 	gVolume = readVolume();
 	readCurrent(gIuvw_AD, gIuvw);
-	gVdc = readVdc();
+	gVdc = 12.0f;//readVdc();
 	gTwoDivVdc = gfDivideAvoidZero(2.0f, gVdc, 1.0f);
 
 	//DutyRef Calculation
@@ -284,13 +284,13 @@ void ADC1_2_IRQHandler(void)
 		leadAngleModeFlg = 0;
 		flgFB = 0;
 	}
-	else if (gElectFreq < 10.0f){
+	else if (gElectFreq < 100.0f){
 		gPosMode = POSMODE_HALL;
 		gDrvMode = DRVMODE_OPENLOOP;
 		leadAngleModeFlg = 0;
 		flgFB = 0;
 	}
-	else if(gElectFreq < 40.0f){
+	else if(gElectFreq < 200.0f){
 		gPosMode = POSMODE_HALL_PLL;
 		gDrvMode = DRVMODE_OPENLOOP;
 		leadAngleModeFlg = 1;
@@ -318,15 +318,15 @@ void ADC1_2_IRQHandler(void)
 		//sixStepTasks(gDutyRef, leadAngleModeFlg, 0.0f, &theta_tmp, &electAngVelo_tmp, gDuty, outputMode);
 		calcElectAngle(leadAngleModeFlg, &voltageMode_tmp, &theta_tmp, &electAngVelo_tmp);
 		gTheta = theta_tmp;
-		//gElectAngVelo = electAngVelo_tmp;
+		gElectAngVelo = electAngVelo_tmp;
 		//gTheta_DAC = 1000;//(gTheta + PI) * ONEDIVTWOPI * 4096;
 
 		//write IO signals
-		//gTheta = gTheta + 2000.0f * gVolume * CARRIERCYCLE;
+		//gTheta = gTheta + 100.0f * CARRIERCYCLE;
 		//gTheta = gfWrapTheta(gTheta);
 
 		VectorControlTasks(Idq_ref, gTheta, gElectAngVelo, gIuvw, gVdc, gTwoDivVdc, flgFB, gDuty, outputMode);
-		//OpenLoopTasks(0.5f, gTheta, gIuvw, gTwoDivVdc, gDuty, outputMode);
+		//OpenLoopTasks(1.5f, gTheta, gIuvw, gTwoDivVdc, gDuty, outputMode);
 	}
 
 	writeOutputMode(outputMode);
