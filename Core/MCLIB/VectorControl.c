@@ -14,6 +14,8 @@
 
 static float sIab[2];
 static float sIdq[2];
+static float sIq_LPF = 0;
+static float sIq_ref_LPF = 0;
 static float sIdq_ref_1000[2];
 static float sIdq_1000[2];
 static float sVdq[2];
@@ -37,12 +39,13 @@ static inline void CurrentFbControl(float *Igd_ref, float *Igd, float electAngVe
 void VectorControlTasks(float *Idq_ref, float theta, float electAngVelo, float *Iuvw, float Vdc, float twoDivVdc, uint8_t flgFB, float* Duty, int8_t* outputMode){
 	float Vq_ref_open;
 	if ( flgFB == 0 ){
-		Vq_ref_open = Vdc * SQRT3DIV2_DIV2 * gVolume;
+		Vq_ref_open = Idq_ref[1] * 2.0f * Ra;//Vdc * SQRT3DIV2_DIV2 * gVolume;
 			OpenLoopTasks(Vq_ref_open, theta, Iuvw, twoDivVdc, Duty, outputMode);
 			sVdq[0] = 0.0f;
 			sVdq[1] = Vq_ref_open;
 			sVdq_i[0] = 0.0f;
 			sVdq_i[1] = 0.0f;
+			sIq_ref_LPF = sIq_LPF;
 		}
 	else{
 
@@ -54,11 +57,13 @@ void VectorControlTasks(float *Idq_ref, float theta, float electAngVelo, float *
 		uvw2ab(gIuvw, sIab);
 		ab2dq(theta, sIab, sIdq);
 
+		gLPF(Idq_ref[1], 62.8f, CARRIERCYCLE, &sIq_ref_LPF);
+		Idq_ref[1] = sIq_ref_LPF; // zanteisyori
 		CurrentFbControl(Idq_ref, sIdq, electAngVelo, Vdc, sVdq, &sVamp);
 		sMod = calcModFromVamp(sVamp, gTwoDivVdc);
 
-		sEdq[0] = sVdq[0] - Ra * sIdq[0];// + La * electAngVelo * sIdq[1];
-		sEdq[1] = sVdq[1] - Ra * sIdq[1];// - La * electAngVelo * sIdq[0];
+		sEdq[0] = sVdq[0] - Ra * sIdq[0] + La * electAngVelo * sIdq[1];
+		sEdq[1] = sVdq[1] - Ra * sIdq[1] - La * electAngVelo * sIdq[0];
 		sAngleErr = atan2f(-1.0f * sEdq[0], sEdq[1]);
 
 		dq2ab(theta, sVdq, sVab);
@@ -70,6 +75,8 @@ void VectorControlTasks(float *Idq_ref, float theta, float electAngVelo, float *
 		sIdq_1000[0] = sIdq[0] * 1000.0f;
 		sIdq_1000[1] = sIdq[1] * 1000.0f;
 	}
+
+	gLPF(sIdq[1], 125.6f, CARRIERCYCLE, &sIq_LPF);
 
 }
 

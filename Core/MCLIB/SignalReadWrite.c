@@ -59,8 +59,8 @@ float readVolume(void){
 	float Volume;
 	uint16_t Volume_ad = gAdcValue[1];
 
-	Volume = ((int16_t)Volume_ad - 99)* 0.0002442f;
-	//Volume = ((int16_t)Volume_ad - 950) * 0.000573394f;
+	//Volume = ((int16_t)Volume_ad - 99)* 0.0002442f;
+	Volume = ((int16_t)Volume_ad - 950) * 0.000573394f;
 	if( Volume < 0) Volume = 0;
 	return Volume;
 }

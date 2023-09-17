@@ -261,86 +261,8 @@ void ADC1_2_IRQHandler(void)
 	gVdc = 12.0f;//readVdc();
 	gTwoDivVdc = gfDivideAvoidZero(2.0f, gVdc, 1.0f);
 
-	//DutyRef Calculation
-	//if ( gButton1 == 1 )
-	  rotDir = 1;
-	//else
-	//  rotDir = -1;
-
-
-	  Idq_ref[0] = 0.0f;//gVolume * 2;//-0.0f;//gVolume;//0.05f;
-	  Idq_ref[1] = 10.0f * gVolume;
-	/*// Speed Control
-	ErectFreqRef = 200.0f * gVolume;
-	ErectFreqErr = ErectFreqRef - gElectFreq;
-	gDutyRef += ErectFreqErr * 0.0000001f;
-	*/
-
 	// Sequence Control
-	if(gInitCnt < 500){
-		gInitCnt++;
-		gPosMode = POSMODE_HALL;
-		gDrvMode = DRVMODE_OFF;
-		leadAngleModeFlg = 0;
-		flgFB = 0;
-	}
-	else if (gElectFreq < 100.0f){
-		gPosMode = POSMODE_HALL;
-		gDrvMode = DRVMODE_OPENLOOP;
-		leadAngleModeFlg = 0;
-		flgFB = 0;
-	}
-	else if(gElectFreq < 200.0f){
-		gPosMode = POSMODE_HALL_PLL;
-		gDrvMode = DRVMODE_OPENLOOP;
-		leadAngleModeFlg = 1;
-		flgFB = 0;
-	}
-	else{
-		gPosMode = POSMODE_HALL_PLL;
-		gDrvMode = DRVMODE_VECTORCONTROL;
-		leadAngleModeFlg = 1;
-		flgFB = 1;
-	}
-
-	// MotorDrive
-	if(gDrvMode == DRVMODE_OFF){
-		outputMode[0] = OUTPUTMODE_OPEN;
-		outputMode[1] = OUTPUTMODE_OPEN;
-		outputMode[2] = OUTPUTMODE_OPEN;
-		gDuty[0] = 0.0f;
-		gDuty[1] = 0.0f;
-		gDuty[2] = 0.0f;
-
-	}
-	else{
-		gDutyRef = 0.0f;
-		//sixStepTasks(gDutyRef, leadAngleModeFlg, 0.0f, &theta_tmp, &electAngVelo_tmp, gDuty, outputMode);
-		calcElectAngle(leadAngleModeFlg, &voltageMode_tmp, &theta_tmp, &electAngVelo_tmp);
-		gTheta = theta_tmp;
-		gElectAngVelo = electAngVelo_tmp;
-		//gTheta_DAC = 1000;//(gTheta + PI) * ONEDIVTWOPI * 4096;
-
-		//write IO signals
-		//gTheta = gTheta + 100.0f * CARRIERCYCLE;
-		//gTheta = gfWrapTheta(gTheta);
-
-		VectorControlTasks(Idq_ref, gTheta, gElectAngVelo, gIuvw, gVdc, gTwoDivVdc, flgFB, gDuty, outputMode);
-		//OpenLoopTasks(1.5f, gTheta, gIuvw, gTwoDivVdc, gDuty, outputMode);
-	}
-
-	writeOutputMode(outputMode);
-	writeDuty(gDuty);
-
-
-
-
-	//if ( gButton1 == 0 )
-	//	OpenLoopTasks(gDutyRef * 8.0f, gTheta, gIuvw, gTwoDivVdc, gDuty, outputMode);
-	//else
-
-//
-//VectorControlTasks(Idq_ref, gTheta, gIuvw, gVdc, gDuty);
+	Sequence();
 
 	HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
 
