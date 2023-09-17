@@ -125,6 +125,15 @@ int main(void)
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);
   HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_3);
 
+  // Set Duty Output Delay to Constant
+  // https://digitalservo.jp/blogs/posts/2022/12/stm32-pwm-setting/
+  TIM1 -> RCR = 1;
+  TIM1 -> EGR  |= TIM_EGR_UG;
+  TIM1 -> CNT = TIM1 -> ARR;
+  TIM1 -> CR1 &= ~(TIM_CR1_CMS);
+  TIM1 -> CR1 |= TIM_CR1_DIR;
+  TIM1 -> CR1 |= TIM_CR1_CMS;
+
   TIM1 -> CCR4 = (TIM1 -> ARR) - 40;//for Carrier Top Interrupt
 
   // Start TIM2 Input Capture
