@@ -1,8 +1,2 @@
-../Core/MCLIB/SixsStep.c:57:6:sixStepDrive	40	static
-../Core/MCLIB/SixsStep.c:85:6:calcElectAngle	48	static
-../Core/MCLIB/SixsStep.c:196:16:calcVoltageMode	24	static
-../Core/MCLIB/SixsStep.c:229:13:calcRotDirFromVoltageMode	24	static
-../Core/MCLIB/SixsStep.c:246:14:calcElectAngleFromVoltageMode	24	static
-../Core/MCLIB/SixsStep.c:292:16:calcVoltageModeFromElectAngle	48	static
-../Core/MCLIB/SixsStep.c:326:13:calcOutputMode	16	static
-../Core/MCLIB/SixsStep.c:367:13:calcDuty	32	static
+../Core/MCLIB/SixsStep.c:57:6:sixStepDrive	32	static
+../Core/MCLIB/SixsStep.c:85:6:calcElectAngle	32	static

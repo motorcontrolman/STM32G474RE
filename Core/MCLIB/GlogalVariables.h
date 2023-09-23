@@ -34,15 +34,21 @@
 
 
 // for NIDEC Motor
-// #define Ra					1.680596498f
-// #define La					0.00048f
-// #define Ke					1.03E-03f
+#define Ra					1.680596498f
+#define La					0.00048f
+#define Ke					1.03E-03f
 
 // for CQKit Motor
-#define Ra					0.027f
-#define ONEDIVRa			1/Ra
-#define La					0.000035f
-#define Ke					9.36E-03f
+// #define Ra					0.027f
+// #define ONEDIVRa			1/Ra
+// #define La					0.000035f
+// #define Ke					9.36E-03f
+
+// for IHM07M1 Motor
+//#define Ra					0.13f
+//#define ONEDIVRa			1/Ra
+//#define La					15e-6f
+//#define Ke					1.97e-3f
 
 // Global Variables
 extern uint16_t gAdcValue[2];

@@ -34,7 +34,8 @@ Core/MCLIB/VectorControl.o: ../Core/MCLIB/VectorControl.c \
  ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_tim_ex.h \
  ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart.h \
  ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart_ex.h \
- ../Core/MCLIB/GeneralFunctions.h ../Core/MCLIB/VectorControl.h
+ ../Core/MCLIB/GeneralFunctions.h ../Core/MCLIB/VectorControl.h \
+ ../Core/MCLIB/ControlFunctions.h
 ../Core/MCLIB/GlogalVariables.h:
 ../Core/Inc/main.h:
 ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h:
@@ -73,3 +74,4 @@ Core/MCLIB/VectorControl.o: ../Core/MCLIB/VectorControl.c \
 ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart_ex.h:
 ../Core/MCLIB/GeneralFunctions.h:
 ../Core/MCLIB/VectorControl.h:
+../Core/MCLIB/ControlFunctions.h:

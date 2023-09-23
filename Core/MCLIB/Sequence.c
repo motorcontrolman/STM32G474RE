@@ -25,6 +25,8 @@ static float sDuty[3];
 
 static void slctPosMode(float electFreq, uint8_t* posMode);
 static void slctDrvMode(float electFreq, uint8_t* drvMode);
+static void slctPosModeForSensorless(uint8_t button, uint8_t* posMode);
+static void slctDrvModeForSensorless(uint8_t button, uint8_t* drvMode);
 static void slctElectAngleFromPosMode(uint8_t posMode, float *electAngle, float *electAngVelo);
 static void slctCntlFromDrvMode(uint8_t drvMode, float* Duty, int8_t* outputMode);
 
@@ -38,6 +40,8 @@ void Sequence(void){
 	else{
 	slctPosMode(gElectFreq, &sPosMode);
 	slctDrvMode(gElectFreq, &sDrvMode);
+	//slctPosModeForSensorless(gButton1, &sPosMode);
+	//slctDrvModeForSensorless(gButton1, &sDrvMode);
 	}
 
 	slctElectAngleFromPosMode(sPosMode, &sElectAngle, &sElectAngVelo);
@@ -82,8 +86,24 @@ void slctDrvMode(float electFreq, uint8_t* drvMode){
 	}
 }
 
+static void slctPosModeForSensorless(uint8_t button, uint8_t* posMode){
+	if (button != 1)
+		*posMode = POSMODE_FREERUN;
+	else
+		*posMode = POSMODE_FREERUN;//POSMODE_SENSORLESS;
+}
+
+static void slctDrvModeForSensorless(uint8_t button, uint8_t* drvMode){
+	if (button != 1)
+		*drvMode = DRVMODE_OPENLOOP;
+	else
+		*drvMode = DRVMODE_OPENLOOP;//DRVMODE_VECTORCONTROL;
+}
+
 void slctElectAngleFromPosMode(uint8_t posMode, float *electAngle, float *electAngVelo){
 	uint8_t flgPLL;
+	float *electAngle2;
+	float *electAngVelo2;
 
 	switch(posMode){
 	case POSMODE_STOP:
@@ -91,8 +111,9 @@ void slctElectAngleFromPosMode(uint8_t posMode, float *electAngle, float *electA
 		*electAngVelo = 0;
 
 	case POSMODE_FREERUN:
-		sElectAngle = sElectAngle + 2000.0f * CARRIERCYCLE;
+		sElectAngle = sElectAngle + 20.0f * CARRIERCYCLE;// * gVolume;
 		*electAngle = gfWrapTheta(sElectAngle);
+		calcElectAngle(flgPLL, electAngle2, electAngVelo2);
 		break;
 	case POSMODE_HALL:
 		flgPLL = 0;

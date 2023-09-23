@@ -11,6 +11,7 @@
 #include "GlogalVariables.h"
 #include "GeneralFunctions.h"
 #include "VectorControl.h"
+#include "ControlFunctions.h"
 
 static float sIab[2];
 static float sIdq[2];
@@ -25,7 +26,11 @@ static float sVuvw[3];
 static float sVamp;
 static float sMod;
 static float sEdq[2];
-static float sAngleErr;
+
+static float sElectAngleEstimate = 0.0f;
+static float sIntegral_ElectAngleErr_Ki = 0.0f;
+static float sElectAngVeloEstimate;
+static float sElectAngleErr;
 
 static inline void uvw2ab(float *uvw, float *ab);
 static inline void ab2uvw(float *ab, float *uvw);
@@ -35,14 +40,50 @@ static inline float calcAmpFromVect(float* Vect);
 static inline float calcModFromVamp(float Vamp, float twoDivVdc);
 static inline void Vuvw2Duty(float twoDivVdc, float *Vuvw, float *Duty);
 static inline void CurrentFbControl(float *Igd_ref, float *Igd, float electAngVelo, float Vdc, float *Vgd, float* Vamp);
+static inline float FluxObserver(float* Igd, float* Vgd, float* Egd);
 
 void VectorControlTasks(float *Idq_ref, float theta, float electAngVelo, float *Iuvw, float Vdc, float twoDivVdc, uint8_t flgFB, float* Duty, int8_t* outputMode){
 	float Vq_ref_open;
+	float wc_PLL;
+	float Kp_PLL;
+	float Ki_PLL;
+	float Ts_PLL;
+
+	/*
+	sElectAngleErr = FluxObserver(sIdq, sVdq, sEdq);
+
+	if( gButton1 == 0){
+		sElectAngVeloEstimate = 200.0f;
+		sElectAngleEstimate = theta;
+		sIntegral_ElectAngleErr_Ki = sElectAngVeloEstimate;
+
+	}
+	else{
+
+		// Calculate PLL Gain based on Electrical Angle Velocity
+		wc_PLL = 10.0f * TWOPI;//sElectAngVeloEstimate * 0.5f;
+		Ts_PLL = CARRIERCYCLE;
+		Kp_PLL = wc_PLL;
+		Ki_PLL = 0.2f * wc_PLL * wc_PLL * Ts_PLL;
+
+		// Estimate Electrical Angle & Velocity using PLL
+		sElectAngleEstimate += sElectAngVeloEstimate * CARRIERCYCLE;
+		sElectAngleEstimate = gfWrapTheta(sElectAngleEstimate);
+
+		// wrap Electrical Angle Err
+		sElectAngleErr = gfWrapTheta(sElectAngleErr);
+
+		//PLL
+		sElectAngVeloEstimate = cfPhaseLockedLoop(sElectAngleErr, Kp_PLL, Ki_PLL, &sIntegral_ElectAngleErr_Ki);
+
+		theta = sElectAngleEstimate;
+	}
+	*/
+
+
 	if ( flgFB == 0 ){
-		Vq_ref_open = Idq_ref[1] * 2.0f * Ra;//Vdc * SQRT3DIV2_DIV2 * gVolume;
+		Vq_ref_open = Vdc * SQRT3DIV2_DIV2 * gVolume;
 			OpenLoopTasks(Vq_ref_open, theta, Iuvw, twoDivVdc, Duty, outputMode);
-			sVdq[0] = 0.0f;
-			sVdq[1] = Vq_ref_open;
 			sVdq_i[0] = 0.0f;
 			sVdq_i[1] = 0.0f;
 			sIq_ref_LPF = sIq_LPF;
@@ -61,10 +102,6 @@ void VectorControlTasks(float *Idq_ref, float theta, float electAngVelo, float *
 		Idq_ref[1] = sIq_ref_LPF; // zanteisyori
 		CurrentFbControl(Idq_ref, sIdq, electAngVelo, Vdc, sVdq, &sVamp);
 		sMod = calcModFromVamp(sVamp, gTwoDivVdc);
-
-		sEdq[0] = sVdq[0] - Ra * sIdq[0] + La * electAngVelo * sIdq[1];
-		sEdq[1] = sVdq[1] - Ra * sIdq[1] - La * electAngVelo * sIdq[0];
-		sAngleErr = atan2f(-1.0f * sEdq[0], sEdq[1]);
 
 		dq2ab(theta, sVdq, sVab);
 		ab2uvw(sVab, sVuvw);
@@ -89,6 +126,7 @@ void OpenLoopTasks(float VamRef, float theta, float *Iuvw, float twoDivVdc, floa
 	ab2dq(theta, sIab, sIdq);
 	sVdq[0] = 0.0f;
 	sVdq[1] = VamRef;
+
 	dq2ab(theta, sVdq, sVab);
 	ab2uvw(sVab, sVuvw);
 	Vuvw2Duty(twoDivVdc, sVuvw, Duty);
@@ -198,13 +236,15 @@ static void CurrentFbControl(float* Igd_ref, float* Igd, float electAngVelo, flo
 	}
 }
 
-/*
+
 float FluxObserver(float* Igd, float* Vgd, float* Egd){
-	float Theta_est;
-	Egd[0] = Vgd[0] - Rmotor * Igd[0];
-	Egd[1] = Vgd[1] - Rmotor * Igd[1];
+	float angleErr;
+	Egd[0] = Vgd[0] - Ra * Igd[0];
+	Egd[1] = Vgd[1] - Ra * Igd[1];
+	//sEdq[0] = sVdq[0] - Ra * sIdq[0] + La * electAngVelo * sIdq[1];
+	//sEdq[1] = sVdq[1] - Ra * sIdq[1] - La * electAngVelo * sIdq[0];
+	angleErr = atan2f(-1.0f * sEdq[0], sEdq[1]);
 	//arm_atan2_f32(Egd[0], Egd[1], &result);
-	Theta_est = atan2f(Egd[1], Egd[0]);
-	return Theta_est;
+	//Theta_est = atan2f(Egd[1], Egd[0]);
+	return angleErr;
 }
-*/
