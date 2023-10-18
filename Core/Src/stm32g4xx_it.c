@@ -258,7 +258,7 @@ void ADC1_2_IRQHandler(void)
 	gButton1 = readButton1();
 	gVolume = readVolume();
 	readCurrent(gIuvw_AD, gIuvw);
-	gVdc = readVdc();
+	gVdc = 13.0f;//readVdc();
 	gTwoDivVdc = gfDivideAvoidZero(2.0f, gVdc, 1.0f);
 
 	// Sequence Control

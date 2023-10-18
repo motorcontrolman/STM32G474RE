@@ -67,3 +67,25 @@ void gLPF(float r, float wc, float Ts, float *y){
 	*y = (1 - gainLPF) * yn_1 + gainLPF * r;
 }
 
+void gRateLimit(float r, float RateLimit, float Ts, float *y){
+	// Under approximation  1/wc >> Ts
+	// time constant tau = 1/wc
+	float dy;
+	float yn_1;
+	float ytmp;
+
+	dy = RateLimit * Ts;
+	yn_1 = *y;
+
+	if( r > yn_1 )
+		ytmp = yn_1 + dy;
+	else if( r < yn_1 )
+		ytmp = yn_1 - dy;
+
+	//ytmp = gUpperLowerLimit(ytmp, r, -1.0f * r);
+
+	*y = ytmp;
+
+}
+
+

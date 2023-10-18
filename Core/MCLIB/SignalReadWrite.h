@@ -11,11 +11,11 @@
 #include <stdint.h>
 #include "main.h"
 
-#define IU_ADOffSET			1938
-#define IV_ADOffSET			1952
-#define IW_ADOffSET			1944
-#define AD2CURRENT			-0.00193586253f // for IHM07M1
-//#define AD2CURRENT			-0.014767822f // for DRV8302 tekito
+#define IU_ADOffSET			1983
+#define IV_ADOffSET			1991
+#define IW_ADOffSET			2014
+//#define AD2CURRENT			-0.00193586253f // for IHM07M1
+#define AD2CURRENT			-0.014767822f // for DRV8302 tekito
 //#define AD2CURRENT			-0.358844273 // for CQKIT
 #define AD2VOLTAGE			0.0154305f; // for IHM07M1 1/(9.31/(9.31+169)*4096/3.3V)
 //#define AD2VOLTAGE			0.025210084f; // for CQKIT

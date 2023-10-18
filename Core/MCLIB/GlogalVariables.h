@@ -14,9 +14,9 @@
 #define OUTPUTMODE_OPEN 		0
 #define OUTPUTMODE_POSITIVE 	1
 #define OUTPUTMODE_NEGATIVE 	-1
-#define SYSTEMCLOCKFREQ 		72000000.0f //for F302
+#define SYSTEMCLOCKFREQ 		170000000.0f //for G474
 #define SYSTEMCLOCKCYCLE		1 / SYSTEMCLOCKFREQ
-#define CARRIERFREQ				7000.0f
+#define CARRIERFREQ				17000.0f
 #define CARRIERCYCLE 			1 / CARRIERFREQ //0.00005555555f
 #define DUTYMAXCOUNT 			SYSTEMCLOCKFREQ / (CARRIERFREQ * 2) - 1 //Center Aligned
 #define BITMAX32	 			4294967296
@@ -34,9 +34,14 @@
 
 
 // for NIDEC Motor
-#define Ra					1.680596498f
-#define La					0.00048f
-#define Ke					1.03E-03f
+//#define Ra					1.680596498f
+//#define La					0.00048f
+//#define Ke					1.03E-03f
+
+// for DN Motor
+#define Ra					0.03f
+#define La					4.8E-5f
+#define Ke					0.012f
 
 // for CQKit Motor
 // #define Ra					0.027f

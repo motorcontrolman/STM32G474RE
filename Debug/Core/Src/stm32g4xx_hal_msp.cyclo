@@ -9,6 +9,6 @@ stm32g4xx_hal_msp.c:375:6:HAL_TIM_PWM_MspInit	2
 stm32g4xx_hal_msp.c:397:6:HAL_TIM_IC_MspInit	2
 stm32g4xx_hal_msp.c:442:6:HAL_TIM_Base_MspInit	2
 stm32g4xx_hal_msp.c:458:6:HAL_TIM_MspPostInit	2
-stm32g4xx_hal_msp.c:501:6:HAL_TIM_PWM_MspDeInit	2
-stm32g4xx_hal_msp.c:523:6:HAL_TIM_IC_MspDeInit	2
-stm32g4xx_hal_msp.c:555:6:HAL_TIM_Base_MspDeInit	2
+stm32g4xx_hal_msp.c:519:6:HAL_TIM_PWM_MspDeInit	2
+stm32g4xx_hal_msp.c:541:6:HAL_TIM_IC_MspDeInit	2
+stm32g4xx_hal_msp.c:573:6:HAL_TIM_Base_MspDeInit	2

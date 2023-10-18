@@ -40,53 +40,26 @@ static inline float calcAmpFromVect(float* Vect);
 static inline float calcModFromVamp(float Vamp, float twoDivVdc);
 static inline void Vuvw2Duty(float twoDivVdc, float *Vuvw, float *Duty);
 static inline void CurrentFbControl(float *Igd_ref, float *Igd, float electAngVelo, float Vdc, float *Vgd, float* Vamp);
-static inline float FluxObserver(float* Igd, float* Vgd, float* Egd);
+static inline float FluxObserver(float* Igd, float* Vgd, float electAngVelo, float* Egd);
+static inline void calcElectAngleEstimate(uint8_t flgPLL, float electAngle, float electAngVelo, float *electAngleEstimate, float *electAngVeloEstimate);
 
-void VectorControlTasks(float *Idq_ref, float theta, float electAngVelo, float *Iuvw, float Vdc, float twoDivVdc, uint8_t flgFB, float* Duty, int8_t* outputMode){
+void VectorControlTasks(float *Idq_ref, float electAngle, float electAngVelo, float *Iuvw, float Vdc, float twoDivVdc, uint8_t flgFB, uint8_t flgPLL, float* Duty, int8_t* outputMode){
+
 	float Vq_ref_open;
-	float wc_PLL;
-	float Kp_PLL;
-	float Ki_PLL;
-	float Ts_PLL;
+	float theta;
+	float omega;
 
-	/*
-	sElectAngleErr = FluxObserver(sIdq, sVdq, sEdq);
+	calcElectAngleEstimate(flgPLL, electAngle, electAngVelo, &sElectAngleEstimate, &sElectAngVeloEstimate);
 
-	if( gButton1 == 0){
-		sElectAngVeloEstimate = 200.0f;
-		sElectAngleEstimate = theta;
-		sIntegral_ElectAngleErr_Ki = sElectAngVeloEstimate;
-
-	}
-	else{
-
-		// Calculate PLL Gain based on Electrical Angle Velocity
-		wc_PLL = 10.0f * TWOPI;//sElectAngVeloEstimate * 0.5f;
-		Ts_PLL = CARRIERCYCLE;
-		Kp_PLL = wc_PLL;
-		Ki_PLL = 0.2f * wc_PLL * wc_PLL * Ts_PLL;
-
-		// Estimate Electrical Angle & Velocity using PLL
-		sElectAngleEstimate += sElectAngVeloEstimate * CARRIERCYCLE;
-		sElectAngleEstimate = gfWrapTheta(sElectAngleEstimate);
-
-		// wrap Electrical Angle Err
-		sElectAngleErr = gfWrapTheta(sElectAngleErr);
-
-		//PLL
-		sElectAngVeloEstimate = cfPhaseLockedLoop(sElectAngleErr, Kp_PLL, Ki_PLL, &sIntegral_ElectAngleErr_Ki);
-
-		theta = sElectAngleEstimate;
-	}
-	*/
-
+	theta = sElectAngleEstimate;
+	omega = sElectAngVeloEstimate;
 
 	if ( flgFB == 0 ){
 		Vq_ref_open = Vdc * SQRT3DIV2_DIV2 * gVolume;
-			OpenLoopTasks(Vq_ref_open, theta, Iuvw, twoDivVdc, Duty, outputMode);
-			sVdq_i[0] = 0.0f;
-			sVdq_i[1] = 0.0f;
-			sIq_ref_LPF = sIq_LPF;
+		OpenLoopTasks(Vq_ref_open, theta, Iuvw, twoDivVdc, Duty, outputMode);
+		sVdq_i[0] = 0.0f;
+		sVdq_i[1] = Vq_ref_open;
+		sIq_ref_LPF = sIq_LPF;
 		}
 	else{
 
@@ -100,7 +73,7 @@ void VectorControlTasks(float *Idq_ref, float theta, float electAngVelo, float *
 
 		gLPF(Idq_ref[1], 62.8f, CARRIERCYCLE, &sIq_ref_LPF);
 		Idq_ref[1] = sIq_ref_LPF; // zanteisyori
-		CurrentFbControl(Idq_ref, sIdq, electAngVelo, Vdc, sVdq, &sVamp);
+		CurrentFbControl(Idq_ref, sIdq, omega, Vdc, sVdq, &sVamp);
 		sMod = calcModFromVamp(sVamp, gTwoDivVdc);
 
 		dq2ab(theta, sVdq, sVab);
@@ -220,7 +193,7 @@ static void CurrentFbControl(float* Igd_ref, float* Igd, float electAngVelo, flo
 	sVdq_i[1] += Kid * Ierr[1];
 
 	Vgd[0] = Kp * Ierr[0] + sVdq_i[0];
-	Vgd[1] = Ke * electAngVelo + Kp * Ierr[1] + sVdq_i[1];// + Vgd[1] + Kid * Ierr[1] + ;
+	Vgd[1] = Kp * Ierr[1] + sVdq_i[1];// + Ke * electAngVelo;// + Vgd[1] + Kid * Ierr[1] + ;
 
 	Vphase = atan2f(Vgd[1], Vgd[0]);
 
@@ -237,14 +210,49 @@ static void CurrentFbControl(float* Igd_ref, float* Igd, float electAngVelo, flo
 }
 
 
-float FluxObserver(float* Igd, float* Vgd, float* Egd){
+static float FluxObserver(float* Igd, float* Vgd, float electAngVelo, float* Egd){
 	float angleErr;
-	Egd[0] = Vgd[0] - Ra * Igd[0];
-	Egd[1] = Vgd[1] - Ra * Igd[1];
-	//sEdq[0] = sVdq[0] - Ra * sIdq[0] + La * electAngVelo * sIdq[1];
-	//sEdq[1] = sVdq[1] - Ra * sIdq[1] - La * electAngVelo * sIdq[0];
-	angleErr = atan2f(-1.0f * sEdq[0], sEdq[1]);
+	//Egd[0] = Vgd[0] - Ra * Igd[0];
+	//Egd[1] = Vgd[1] - Ra * Igd[1];
+	Egd[0] = Vgd[0] - Ra * Igd[0] + La * electAngVelo * Igd[1];
+	Egd[1] = Vgd[1] - Ra * Igd[1] - La * electAngVelo * Igd[0];
+	angleErr = atan2f(-1.0f * sEdq[0], sEdq[1]); //推定q軸を基準とした実q軸との誤差を算出
 	//arm_atan2_f32(Egd[0], Egd[1], &result);
 	//Theta_est = atan2f(Egd[1], Egd[0]);
 	return angleErr;
+}
+
+static void calcElectAngleEstimate(uint8_t flgPLL, float electAngle, float electAngVelo, float *electAngleEstimate, float *electAngVeloEstimate){
+	float wc_PLL;
+	float Kp_PLL;
+	float Ki_PLL;
+	float Ts_PLL;
+
+	sElectAngleErr = FluxObserver(sIdq, sVdq, *electAngleEstimate, sEdq);
+
+	if( flgPLL == 0){
+		*electAngVeloEstimate = electAngVelo;
+		*electAngleEstimate = electAngle;
+		sIntegral_ElectAngleErr_Ki = electAngVelo;
+	}
+	else{
+
+		// Calculate PLL Gain based on Electrical Angle Velocity
+		wc_PLL = 50.0f * TWOPI;//sElectAngVeloEstimate * 0.5f;
+		Ts_PLL = CARRIERCYCLE;
+		Kp_PLL = wc_PLL;
+		Ki_PLL = 0.2f * wc_PLL * wc_PLL * Ts_PLL;
+
+		// Estimate Electrical Angle & Velocity using PLL
+		*electAngleEstimate += (*electAngVeloEstimate) * CARRIERCYCLE;
+		*electAngleEstimate = gfWrapTheta(*electAngleEstimate);
+
+		// wrap Electrical Angle Err
+		sElectAngleErr = gfWrapTheta(sElectAngleErr);
+
+		//PLL
+		*electAngVeloEstimate = cfPhaseLockedLoop(sElectAngleErr, Kp_PLL, Ki_PLL, &sIntegral_ElectAngleErr_Ki);
+
+	}
+
 }

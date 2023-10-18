@@ -19,6 +19,8 @@ static uint8_t sDrvMode;
 static uint16_t sInitCnt = 0;
 static float sElectAngle = 0;
 static float sElectAngVelo;
+static float sElectAngVeloRef = 0;
+static float sElectAngVeloRefRateLimit = 0;
 static int8_t sOutputMode[3];
 static float sDuty[3];
 
@@ -36,12 +38,18 @@ void Sequence(void){
 		sInitCnt++;
 		sPosMode = POSMODE_HALL;
 		sDrvMode = DRVMODE_OFFDUTY;
+		sElectAngVeloRefRateLimit = 0;
 	}
-	else{
-	slctPosMode(gElectFreq, &sPosMode);
-	slctDrvMode(gElectFreq, &sDrvMode);
-	//slctPosModeForSensorless(gButton1, &sPosMode);
-	//slctDrvModeForSensorless(gButton1, &sDrvMode);
+	else {
+	//slctPosMode(gElectFreq, &sPosMode);
+	//slctDrvMode(gElectFreq, &sDrvMode);
+
+	sElectAngVeloRef = 50.0f;//1000.0f * gVolume;
+	//gRateLimit(sElectAngVeloRef, 100.0f, CARRIERCYCLE, &sElectAngVeloRefRateLimit);
+	sElectAngVeloRefRateLimit = sElectAngVeloRef;
+
+	slctPosModeForSensorless(gButton1, &sPosMode);
+	slctDrvModeForSensorless(gButton1, &sDrvMode);
 	}
 
 	slctElectAngleFromPosMode(sPosMode, &sElectAngle, &sElectAngVelo);
@@ -87,34 +95,37 @@ void slctDrvMode(float electFreq, uint8_t* drvMode){
 }
 
 static void slctPosModeForSensorless(uint8_t button, uint8_t* posMode){
-	if (button != 1)
+	if (sElectAngVeloRefRateLimit < 100.0f)
 		*posMode = POSMODE_FREERUN;
 	else
-		*posMode = POSMODE_FREERUN;//POSMODE_SENSORLESS;
+		*posMode = POSMODE_SENSORLESS;
 }
 
 static void slctDrvModeForSensorless(uint8_t button, uint8_t* drvMode){
-	if (button != 1)
+	if (sElectAngVeloRefRateLimit < 100.0f)
 		*drvMode = DRVMODE_OPENLOOP;
+	else if(sElectAngVeloRefRateLimit < 200.0f)
+		*drvMode = DRVMODE_OPENLOOP_SENSORLESS;
 	else
-		*drvMode = DRVMODE_OPENLOOP;//DRVMODE_VECTORCONTROL;
+		*drvMode = DRVMODE_VECTORCONTROL;
 }
 
 void slctElectAngleFromPosMode(uint8_t posMode, float *electAngle, float *electAngVelo){
 	uint8_t flgPLL;
-	float *electAngle2;
-	float *electAngVelo2;
 
 	switch(posMode){
 	case POSMODE_STOP:
-		*electAngle = 0;
-		*electAngVelo = 0;
+		*electAngle = 0.0f;
+		*electAngVelo = 0.0f;
+		sElectAngVeloRef = 0.0f;
+		break;
 
 	case POSMODE_FREERUN:
-		sElectAngle = sElectAngle + 20.0f * CARRIERCYCLE;// * gVolume;
+		*electAngVelo = sElectAngVeloRefRateLimit;
+		sElectAngle = sElectAngle + sElectAngVeloRefRateLimit * CARRIERCYCLE ;
 		*electAngle = gfWrapTheta(sElectAngle);
-		calcElectAngle(flgPLL, electAngle2, electAngVelo2);
 		break;
+
 	case POSMODE_HALL:
 		flgPLL = 0;
 		calcElectAngle(flgPLL, electAngle, electAngVelo);
@@ -122,6 +133,13 @@ void slctElectAngleFromPosMode(uint8_t posMode, float *electAngle, float *electA
 	case POSMODE_HALL_PLL:
 		flgPLL = 1;
 		calcElectAngle(flgPLL, electAngle, electAngVelo);
+		break;
+	case POSMODE_SENSORLESS:
+		flgPLL = 1;
+		*electAngVelo = sElectAngVeloRefRateLimit;
+		sElectAngle = sElectAngle + sElectAngVeloRefRateLimit * CARRIERCYCLE ;
+		*electAngle = gfWrapTheta(sElectAngle);
+
 		break;
 	default:
 		*electAngle = 0;
@@ -132,6 +150,7 @@ void slctElectAngleFromPosMode(uint8_t posMode, float *electAngle, float *electA
 
 void slctCntlFromDrvMode(uint8_t drvMode, float* Duty, int8_t* outputMode){
 	uint8_t flgFB;
+	uint8_t flgPLL;
 	// MotorDrive
 
 	float Idq_ref[2];
@@ -144,11 +163,18 @@ void slctCntlFromDrvMode(uint8_t drvMode, float* Duty, int8_t* outputMode){
 			break;
 		case DRVMODE_OPENLOOP:
 			flgFB = 0;
-			VectorControlTasks(Idq_ref, gTheta, gElectAngVelo, gIuvw, gVdc, gTwoDivVdc, flgFB, Duty, outputMode);
+			flgPLL = 0;
+			VectorControlTasks(Idq_ref, sElectAngle, sElectAngVeloRefRateLimit, gIuvw, gVdc, gTwoDivVdc, flgFB, flgPLL, Duty, outputMode);
+			break;
+		case DRVMODE_OPENLOOP_SENSORLESS:
+			flgFB = 0;
+			flgPLL = 1;
+			VectorControlTasks(Idq_ref, sElectAngle, sElectAngVeloRefRateLimit, gIuvw, gVdc, gTwoDivVdc, flgFB, flgPLL, Duty, outputMode);
 			break;
 		case DRVMODE_VECTORCONTROL:
 			flgFB = 1;
-			VectorControlTasks(Idq_ref, gTheta, gElectAngVelo, gIuvw, gVdc, gTwoDivVdc, flgFB, Duty, outputMode);
+			flgPLL = 1;
+			VectorControlTasks(Idq_ref, sElectAngle, sElectAngVeloRefRateLimit, gIuvw, gVdc, gTwoDivVdc, flgFB, flgPLL, Duty, outputMode);
 			break;
 		default :
 			gOffDuty(Duty, outputMode);
