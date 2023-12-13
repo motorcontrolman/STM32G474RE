@@ -44,7 +44,7 @@ void Sequence(void){
 	//slctPosMode(gElectFreq, &sPosMode);
 	//slctDrvMode(gElectFreq, &sDrvMode);
 
-	sElectAngVeloRef = 50.0f;//1000.0f * gVolume;
+	sElectAngVeloRef = 1000.0f * gVolume;
 	//gRateLimit(sElectAngVeloRef, 100.0f, CARRIERCYCLE, &sElectAngVeloRefRateLimit);
 	sElectAngVeloRefRateLimit = sElectAngVeloRef;
 

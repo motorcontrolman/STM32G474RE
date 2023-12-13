@@ -1,2 +1,2 @@
-VectorControl.c:93:6:OpenLoopTasks	1
-VectorControl.c:46:6:VectorControlTasks	4
+VectorControl.c:93:6:OpenLoopTasks	5
+VectorControl.c:46:6:VectorControlTasks	8
