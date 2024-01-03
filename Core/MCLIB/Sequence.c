@@ -44,7 +44,7 @@ void Sequence(void){
 	//slctPosMode(gElectFreq, &sPosMode);
 	//slctDrvMode(gElectFreq, &sDrvMode);
 
-	sElectAngVeloRef = 1000.0f * gVolume;
+	sElectAngVeloRef = 100.0f;// * gVolume;
 	//gRateLimit(sElectAngVeloRef, 100.0f, CARRIERCYCLE, &sElectAngVeloRefRateLimit);
 	sElectAngVeloRefRateLimit = sElectAngVeloRef;
 
@@ -95,16 +95,16 @@ void slctDrvMode(float electFreq, uint8_t* drvMode){
 }
 
 static void slctPosModeForSensorless(uint8_t button, uint8_t* posMode){
-	if (sElectAngVeloRefRateLimit < 100.0f)
+	if (sElectAngVeloRefRateLimit < 1000.0f)
 		*posMode = POSMODE_FREERUN;
 	else
 		*posMode = POSMODE_SENSORLESS;
 }
 
 static void slctDrvModeForSensorless(uint8_t button, uint8_t* drvMode){
-	if (sElectAngVeloRefRateLimit < 100.0f)
+	if (sElectAngVeloRefRateLimit < 1000.0f)
 		*drvMode = DRVMODE_OPENLOOP;
-	else if(sElectAngVeloRefRateLimit < 200.0f)
+	else if(sElectAngVeloRefRateLimit < 2000.0f)
 		*drvMode = DRVMODE_OPENLOOP_SENSORLESS;
 	else
 		*drvMode = DRVMODE_VECTORCONTROL;

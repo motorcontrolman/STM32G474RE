@@ -55,7 +55,7 @@ void VectorControlTasks(float *Idq_ref, float electAngle, float electAngVelo, fl
 	omega = sElectAngVeloEstimate;
 
 	if ( flgFB == 0 ){
-		Vq_ref_open = Vdc * SQRT3DIV2_DIV2 * gVolume;
+		Vq_ref_open = Vdc * SQRT3DIV2_DIV2 * 0.1f;//gVolume;
 		OpenLoopTasks(Vq_ref_open, theta, Iuvw, twoDivVdc, Duty, outputMode);
 		sVdq_i[0] = 0.0f;
 		sVdq_i[1] = Vq_ref_open;
@@ -160,6 +160,7 @@ static void Vuvw2Duty(float twoDivVdc, float* Vuvw, float* Duty){
 	float vo;
 
 	// third-harmonic injection
+
 	max = Vuvw[0];
 	if(Vuvw[1] > max)
 		max = Vuvw[1];
@@ -179,9 +180,10 @@ static void Vuvw2Duty(float twoDivVdc, float* Vuvw, float* Duty){
 	Vuvw[2] = Vuvw[2] - vo;
 
 
+
 	Duty[0] = (Vuvw[0] * twoDivVdc);
 	Duty[1] = (Vuvw[1] * twoDivVdc);
-	Duty[2] = -Duty[0] - Duty[1];
+	Duty[2] = (Vuvw[2] * twoDivVdc);//-Duty[0] - Duty[1];
 
 	Duty[0] = gUpperLowerLimit(Duty[0], DUTYUPPER, DUTYLOWER);
 	Duty[1] = gUpperLowerLimit(Duty[1], DUTYUPPER, DUTYLOWER);
