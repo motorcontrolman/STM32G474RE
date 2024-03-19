@@ -1,5 +1,7 @@
-../Core/MCLIB/Sequence.c:97:13:slctPosModeForSensorless	0	static
-../Core/MCLIB/Sequence.c:104:13:slctDrvModeForSensorless	0	static
-../Core/MCLIB/Sequence.c:113:6:slctElectAngleFromPosMode	8	static
-../Core/MCLIB/Sequence.c:151:6:slctCntlFromDrvMode	24	static
-../Core/MCLIB/Sequence.c:35:6:Sequence	16	static
+../Core/MCLIB/Sequence.c:40:6:Sequence	8	static
+../Core/MCLIB/Sequence.c:93:6:slctPosMode	16	static
+../Core/MCLIB/Sequence.c:112:6:slctDrvMode	16	static
+../Core/MCLIB/Sequence.c:128:13:slctPosModeForSensorless	16	static
+../Core/MCLIB/Sequence.c:135:13:slctDrvModeForSensorless	16	static
+../Core/MCLIB/Sequence.c:144:6:slctElectAngleFromPosMode	32	static
+../Core/MCLIB/Sequence.c:181:6:slctCntlFromDrvMode	80	static

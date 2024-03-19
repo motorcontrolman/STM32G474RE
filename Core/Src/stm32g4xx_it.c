@@ -22,7 +22,7 @@
 #include "stm32g4xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "GlogalVariables.h"
+#include "GlobalVariables.h"
 #include "SixsStep.h"
 #include "VectorControl.h"
 #include "SignalReadWrite.h"
@@ -239,27 +239,11 @@ void DMA1_Channel2_IRQHandler(void)
 void ADC1_2_IRQHandler(void)
 {
   /* USER CODE BEGIN ADC1_2_IRQn 0 */
-	int8_t rotDir;
-	float ErectFreqRef = 100.0f;
-	float ErectFreqErr;
-	uint8_t voltageMode_tmp;
-	float theta_tmp;
-	float electAngVelo_tmp;
-	float Idq_ref[2];
-	uint8_t leadAngleModeFlg;
-	uint8_t flgFB;
-  int8_t outputMode[3];
+
   /* USER CODE END ADC1_2_IRQn 0 */
   HAL_ADC_IRQHandler(&hadc1);
   /* USER CODE BEGIN ADC1_2_IRQn 1 */
 	HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
-
-	//read IO signals
-	gButton1 = readButton1();
-	gVolume = readVolume();
-	readCurrent(gIuvw_AD, gIuvw);
-	gVdc = 13.0f;//readVdc();
-	gTwoDivVdc = gfDivideAvoidZero(2.0f, gVdc, 1.0f);
 
 	// Sequence Control
 	Sequence();

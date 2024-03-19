@@ -1,5 +1,7 @@
-Sequence.c:97:13:slctPosModeForSensorless	2
-Sequence.c:104:13:slctDrvModeForSensorless	3
-Sequence.c:113:6:slctElectAngleFromPosMode	6
-Sequence.c:151:6:slctCntlFromDrvMode	5
-Sequence.c:35:6:Sequence	2
+Sequence.c:40:6:Sequence	2
+Sequence.c:93:6:slctPosMode	5
+Sequence.c:112:6:slctDrvMode	5
+Sequence.c:128:13:slctPosModeForSensorless	2
+Sequence.c:135:13:slctDrvModeForSensorless	3
+Sequence.c:144:6:slctElectAngleFromPosMode	6
+Sequence.c:181:6:slctCntlFromDrvMode	5

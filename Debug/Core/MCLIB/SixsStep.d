@@ -33,7 +33,7 @@ Core/MCLIB/SixsStep.o: ../Core/MCLIB/SixsStep.c ../Core/Inc/main.h \
  ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_tim_ex.h \
  ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart.h \
  ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart_ex.h \
- ../Core/MCLIB/GlogalVariables.h ../Core/MCLIB/SixsStep.h \
+ ../Core/MCLIB/SixsStep.h ../Core/MCLIB/GlobalConstants.h \
  ../Core/MCLIB/SignalReadWrite.h ../Core/MCLIB/GeneralFunctions.h \
  ../Core/MCLIB/ControlFunctions.h
 ../Core/Inc/main.h:
@@ -71,8 +71,8 @@ Core/MCLIB/SixsStep.o: ../Core/MCLIB/SixsStep.c ../Core/Inc/main.h \
 ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_tim_ex.h:
 ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart.h:
 ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart_ex.h:
-../Core/MCLIB/GlogalVariables.h:
 ../Core/MCLIB/SixsStep.h:
+../Core/MCLIB/GlobalConstants.h:
 ../Core/MCLIB/SignalReadWrite.h:
 ../Core/MCLIB/GeneralFunctions.h:
 ../Core/MCLIB/ControlFunctions.h:

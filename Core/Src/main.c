@@ -21,7 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "GlogalVariables.h"
+#include "GlobalVariables.h"
 #include "SixsStep.h"
 #include "SignalReadWrite.h"
 /* USER CODE END Includes */

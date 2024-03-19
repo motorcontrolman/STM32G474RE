@@ -34,10 +34,10 @@ Core/Src/stm32g4xx_it.o: ../Core/Src/stm32g4xx_it.c ../Core/Inc/main.h \
  ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart.h \
  ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart_ex.h \
  ../Core/Inc/stm32g4xx_it.h \
- C:/Users/r720r/STM32CubeIDE/workspace_1.12.1/STM32G474RE/Core/MCLIB/GlogalVariables.h \
+ C:/Users/r720r/STM32CubeIDE/workspace_1.12.1/STM32G474RE/Core/MCLIB/GlobalVariables.h \
  C:/Users/r720r/STM32CubeIDE/workspace_1.12.1/STM32G474RE/Core/MCLIB/SixsStep.h \
  C:/Users/r720r/STM32CubeIDE/workspace_1.12.1/STM32G474RE/Core/MCLIB/VectorControl.h \
- C:/Users/r720r/STM32CubeIDE/workspace_1.12.1/STM32G474RE/Core/MCLIB/GlogalVariables.h \
+ C:/Users/r720r/STM32CubeIDE/workspace_1.12.1/STM32G474RE/Core/MCLIB/GlobalStruct.h \
  C:/Users/r720r/STM32CubeIDE/workspace_1.12.1/STM32G474RE/Core/MCLIB/SignalReadWrite.h \
  C:/Users/r720r/STM32CubeIDE/workspace_1.12.1/STM32G474RE/Core/MCLIB/GeneralFunctions.h
 ../Core/Inc/main.h:
@@ -76,9 +76,9 @@ Core/Src/stm32g4xx_it.o: ../Core/Src/stm32g4xx_it.c ../Core/Inc/main.h \
 ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart.h:
 ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart_ex.h:
 ../Core/Inc/stm32g4xx_it.h:
-C:/Users/r720r/STM32CubeIDE/workspace_1.12.1/STM32G474RE/Core/MCLIB/GlogalVariables.h:
+C:/Users/r720r/STM32CubeIDE/workspace_1.12.1/STM32G474RE/Core/MCLIB/GlobalVariables.h:
 C:/Users/r720r/STM32CubeIDE/workspace_1.12.1/STM32G474RE/Core/MCLIB/SixsStep.h:
 C:/Users/r720r/STM32CubeIDE/workspace_1.12.1/STM32G474RE/Core/MCLIB/VectorControl.h:
-C:/Users/r720r/STM32CubeIDE/workspace_1.12.1/STM32G474RE/Core/MCLIB/GlogalVariables.h:
+C:/Users/r720r/STM32CubeIDE/workspace_1.12.1/STM32G474RE/Core/MCLIB/GlobalStruct.h:
 C:/Users/r720r/STM32CubeIDE/workspace_1.12.1/STM32G474RE/Core/MCLIB/SignalReadWrite.h:
 C:/Users/r720r/STM32CubeIDE/workspace_1.12.1/STM32G474RE/Core/MCLIB/GeneralFunctions.h:

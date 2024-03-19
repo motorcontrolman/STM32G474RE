@@ -1,6 +1,5 @@
-Core/MCLIB/VectorControl.o: ../Core/MCLIB/VectorControl.c \
- ../Core/MCLIB/GeneralFunctions.h ../Core/Inc/main.h \
- ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h \
+Core/MCLIB/GlobalVariables.o: ../Core/MCLIB/GlobalVariables.c \
+ ../Core/Inc/main.h ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h \
  ../Core/Inc/stm32g4xx_hal_conf.h \
  ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_rcc.h \
  ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_def.h \
@@ -34,10 +33,7 @@ Core/MCLIB/VectorControl.o: ../Core/MCLIB/VectorControl.c \
  ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_tim_ex.h \
  ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart.h \
  ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart_ex.h \
- ../Core/MCLIB/GlobalConstants.h ../Core/MCLIB/GlobalStruct.h \
- ../Core/MCLIB/VectorControl.h ../Core/MCLIB/ControlFunctions.h \
- ../Core/MCLIB/SignalReadWrite.h
-../Core/MCLIB/GeneralFunctions.h:
+ ../Core/MCLIB/GlobalVariables.h
 ../Core/Inc/main.h:
 ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h:
 ../Core/Inc/stm32g4xx_hal_conf.h:
@@ -73,8 +69,4 @@ Core/MCLIB/VectorControl.o: ../Core/MCLIB/VectorControl.c \
 ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_tim_ex.h:
 ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart.h:
 ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart_ex.h:
-../Core/MCLIB/GlobalConstants.h:
-../Core/MCLIB/GlobalStruct.h:
-../Core/MCLIB/VectorControl.h:
-../Core/MCLIB/ControlFunctions.h:
-../Core/MCLIB/SignalReadWrite.h:
+../Core/MCLIB/GlobalVariables.h:

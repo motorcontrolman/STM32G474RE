@@ -1,2 +1,10 @@
-../Core/MCLIB/VectorControl.c:93:6:OpenLoopTasks	40	static
-../Core/MCLIB/VectorControl.c:46:6:VectorControlTasks	72	static
+../Core/MCLIB/VectorControl.c:50:6:VectorControlTasks	56	static
+../Core/MCLIB/VectorControl.c:91:6:OpenLoopTasks	16	static
+../Core/MCLIB/VectorControl.c:114:13:uvw2ab	16	static
+../Core/MCLIB/VectorControl.c:120:13:ab2uvw	16	static
+../Core/MCLIB/VectorControl.c:126:13:ab2dq	32	static
+../Core/MCLIB/VectorControl.c:135:14:calcAmpFromVect	24	static
+../Core/MCLIB/VectorControl.c:144:14:calcModFromVamp	24	static
+../Core/MCLIB/VectorControl.c:151:13:dq2ab	32	static
+../Core/MCLIB/VectorControl.c:160:13:Vuvw2Duty	48	static
+../Core/MCLIB/VectorControl.c:217:13:CurrentFbControl	48	static

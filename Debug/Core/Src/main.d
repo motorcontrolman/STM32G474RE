@@ -33,7 +33,7 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_tim_ex.h \
  ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart.h \
  ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart_ex.h \
- C:/Users/r720r/STM32CubeIDE/workspace_1.12.1/STM32G474RE/Core/MCLIB/GlogalVariables.h \
+ C:/Users/r720r/STM32CubeIDE/workspace_1.12.1/STM32G474RE/Core/MCLIB/GlobalVariables.h \
  C:/Users/r720r/STM32CubeIDE/workspace_1.12.1/STM32G474RE/Core/MCLIB/SixsStep.h \
  C:/Users/r720r/STM32CubeIDE/workspace_1.12.1/STM32G474RE/Core/MCLIB/SignalReadWrite.h
 ../Core/Inc/main.h:
@@ -71,6 +71,6 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_tim_ex.h:
 ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart.h:
 ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart_ex.h:
-C:/Users/r720r/STM32CubeIDE/workspace_1.12.1/STM32G474RE/Core/MCLIB/GlogalVariables.h:
+C:/Users/r720r/STM32CubeIDE/workspace_1.12.1/STM32G474RE/Core/MCLIB/GlobalVariables.h:
 C:/Users/r720r/STM32CubeIDE/workspace_1.12.1/STM32G474RE/Core/MCLIB/SixsStep.h:
 C:/Users/r720r/STM32CubeIDE/workspace_1.12.1/STM32G474RE/Core/MCLIB/SignalReadWrite.h:
