@@ -38,18 +38,17 @@ static void slctElectAngleFromPosMode(uint8_t posMode, float *electAngle, float 
 static void slctCntlFromDrvMode(uint8_t drvMode, float* Duty, int8_t* outputMode);
 
 void Sequence(void){
+
+	float Vdc;
 	//read IO signals
 	gButton1 = readButton1();
 	gVolume = readVolume();
-	readCurrent(gIuvw_AD, gIuvw);
 
-	gVdc = readVdc();
-	gTwoDivVdc = gfDivideAvoidZero(2.0f, gVdc, 1.0f);
 	readHallSignal(gHall);
 	readElectFreqFromHallSignal(&gElectFreq);
 
 	readCurrent(gIuvw_AD, sSensData.Iuvw);
-	sSensData.Vdc = gVdc;
+	sSensData.Vdc = readVdc();
 	sSensData.twoDivVdc = gfDivideAvoidZero(2.0f, sSensData.Vdc, 1.0f);;
 
 	if(sInitCnt < 500){
@@ -59,33 +58,23 @@ void Sequence(void){
 		sElectAngVeloRefRateLimit = 0;
 	}
 	else {
-	//slctPosMode(gElectFreq, &sPosMode);
-	//slctDrvMode(gElectFreq, &sDrvMode);
+		slctPosMode(gElectFreq, &sPosMode);
+		slctDrvMode(gElectFreq, &sDrvMode);
 
-	sElectAngVeloRef = 200.0f * gVolume;
-	//gRateLimit(sElectAngVeloRef, 100.0f, CARRIERCYCLE, &sElectAngVeloRefRateLimit);
-	sElectAngVeloRefRateLimit = sElectAngVeloRef;
-
-
-	slctPosMode(gElectFreq, &sPosMode);
-	slctDrvMode(gElectFreq, &sDrvMode);
+		sElectAngVeloRef = 200.0f * gVolume;
+		gRateLimit(sElectAngVeloRef, 100.0f, CARRIERCYCLE, &sElectAngVeloRefRateLimit);
 	}
 
 	slctElectAngleFromPosMode(sPosMode, &sElectAngle, &sElectAngVelo);
-	//slctElectAngleFromPosMode(POSMODE_FREERUN, &sElectAngle, &sElectAngVelo);
+
 	sSensData.electAngle = sElectAngle;
 	sSensData.electAngVelo = sElectAngVelo;
 
-	gTheta = sElectAngle;
-	gElectAngVelo = sElectAngVelo;
 
 	slctCntlFromDrvMode(sDrvMode, sDuty, sOutputMode);
-	//slctCntlFromDrvMode(DRVMODE_VECTORCONTROL, sDuty, sOutputMode);
-	//slctCntlFromDrvMode(DRVMODE_OPENLOOP, sDuty, sOutputMode);
 
 	writeOutputMode(sOutputMode);
-	// call writeDuty in VectorControl for Debug.
-	//writeDuty(sDuty);
+	writeDuty(sDuty);
 	//writeDuty8(sDuty);
 
 }
@@ -181,6 +170,7 @@ void slctElectAngleFromPosMode(uint8_t posMode, float *electAngle, float *electA
 void slctCntlFromDrvMode(uint8_t drvMode, float* Duty, int8_t* outputMode){
 
 	float Idq_ref[2];
+	float VamRef
 	Idq_ref[0] = 0.0f;//gVolume * 2;//-0.0f;//gVolume;//0.05f;
 	Idq_ref[1] = IQREFMAX * gVolume;
 
@@ -189,8 +179,8 @@ void slctCntlFromDrvMode(uint8_t drvMode, float* Duty, int8_t* outputMode){
 			gOffDuty(Duty, outputMode);
 			break;
 		case DRVMODE_OPENLOOP:
-			sVectorControlData.Vdq[1] = gVdc * SQRT3DIV2_DIV2 * gVolume;
-			OpenLoopTasks(gVdc * SQRT3DIV2_DIV2 * gVolume, sSensData, &sVectorControlData, Duty, outputMode);
+			VamRef = sSensData.Vdc * SQRT3DIV2_DIV2 * gVolume;
+			OpenLoopTasks(VamRef, sSensData, &sVectorControlData, Duty, outputMode);
 			break;
 		case DRVMODE_OPENLOOP_SENSORLESS:
 			VectorControlTasks(Idq_ref, sSensData, &sVectorControlData, Duty, outputMode);

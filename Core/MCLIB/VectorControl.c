@@ -76,8 +76,7 @@ void VectorControlTasks(float *Idq_ref, struct SensorData sensData, struct Vecto
 	ab2uvw(sVab, sVuvw);
 
 	Vuvw2Duty(sensData.twoDivVdc, sVuvw, Duty);
-	// for Debug
-		writeDuty(Duty);
+
 
 	sIdq_ref_1000[0] = Idq_ref[0] * 1000.0f;
 	sIdq_ref_1000[1] = Idq_ref[1] * 1000.0f;
@@ -96,16 +95,13 @@ void OpenLoopTasks(float VamRef, struct SensorData sensData, struct VectorContro
 	uvw2ab(sensData.Iuvw, sIab);
 	ab2dq(sensData.electAngle, sIab, vectorControlData->Idq);
 	vectorControlData->Vdq[0] = 0.0f;
-	//vectorControlData.Vdq[1] = VamRef;
+	vectorControlData->Vdq[1] = VamRef;
 	vectorControlData->Vdq_i[0] = vectorControlData->Vdq[0];
 	vectorControlData->Vdq_i[1] = vectorControlData->Vdq[1];
 
 	dq2ab(sensData.electAngle, vectorControlData->Vdq, sVab);
 	ab2uvw(sVab, sVuvw);
 	Vuvw2Duty(sensData.twoDivVdc, sVuvw, Duty);
-	// for Debug
-	writeDuty(Duty);
-
 
 	sIdq_1000[0] = sIdq[0] * 1000.0f;
 	sIdq_1000[1] = sIdq[1] * 1000.0f;
