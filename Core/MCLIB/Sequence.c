@@ -36,7 +36,7 @@ static void slctPosMode(float electFreq, uint8_t* posMode);
 static void slctDrvMode(float electFreq, uint8_t* drvMode);
 static void slctPosModeForSensorless(float electAngVelo, uint8_t* posMode);
 static void slctDrvModeForSensorless(float electAngVelo, uint8_t* drvMode);
-static void slctElectAngleFromPosMode(uint8_t posMode, float *electAngle, float *electAngVelo);
+static void slctElectAngleFromPosMode(uint8_t posMode, struct SensorData *sensData);
 static void slctCntlFromDrvMode(uint8_t drvMode, struct SensorData sensData, struct VectorControlData *vectorControlData, float* Duty, int8_t* outputMode);
 
 void Sequence(void){
@@ -72,12 +72,7 @@ void Sequence(void){
 		slctDrvModeForSensorless(sElectAngVeloRefRateLimit, &sDrvMode);
 	}
 
-	slctElectAngleFromPosMode(sPosMode, &sElectAngle, &sElectAngVelo);
-
-	sSensData.electAngle = sElectAngle;
-	sSensData.electAngVelo = sElectAngVelo;
-
-
+	slctElectAngleFromPosMode(sPosMode, &sSensData);
 	slctCntlFromDrvMode(sDrvMode, sSensData, &sVectorControlData, sDuty, sOutputMode);
 
 	writeOutputMode(sOutputMode);
@@ -136,45 +131,49 @@ static void slctDrvModeForSensorless(float electAngVelo, uint8_t* drvMode){
 		*drvMode = DRVMODE_VECTORCONTROL;
 }
 
-void slctElectAngleFromPosMode(uint8_t posMode, float *electAngle, float *electAngVelo){
+static void slctElectAngleFromPosMode(uint8_t posMode, struct SensorData *sensData){
 	uint8_t flgInit;
 	uint8_t flgPLL;
+	float electAngle;
+	float electAngVelo;
 
 	switch(posMode){
 	case POSMODE_STOP:
-		*electAngle = 0.0f;
-		*electAngVelo = 0.0f;
+		sensData->electAngle = 0.0f;
+		sensData->electAngVelo = 0.0f;
 		sElectAngVeloRef = 0.0f;
 		break;
 
 	case POSMODE_FREERUN:
-		*electAngVelo = sElectAngVeloRefRateLimit;
+		sensData->electAngVelo = sElectAngVeloRefRateLimit;
 		sElectAngleFreerun += sElectAngVeloRefRateLimit * CARRIERCYCLE ;
-		*electAngle = gfWrapTheta(sElectAngleFreerun);
+		sensData->electAngle = gfWrapTheta(sElectAngleFreerun);
 
 		// For Sensorless Init
 		flgInit = 0;
-		calcElectAngleEstimate(flgInit, sVectorControlData, &sElectAngleEstimateData);
-		sElectAngleEstimateData.electAngleEstimate = *electAngle;
-		sElectAngleEstimateData.electAngVeloEstimate = *electAngVelo;
+		calcElectAngleEstimate(flgInit, sSensData, sVectorControlData, &sElectAngleEstimateData);
 		break;
 	case POSMODE_HALL:
 		flgPLL = 0;
-		calcElectAngle(gHall, gElectFreq, flgPLL, electAngle, electAngVelo);
+		calcElectAngle(gHall, gElectFreq, flgPLL, &electAngle, &electAngVelo);
+		sensData->electAngle = electAngle;
+		sensData->electAngVelo = electAngVelo;
 		break;
 	case POSMODE_HALL_PLL:
 		flgPLL = 1;
-		calcElectAngle(gHall, gElectFreq, flgPLL, electAngle, electAngVelo);
+		calcElectAngle(gHall, gElectFreq, flgPLL, &electAngle, &electAngVelo);
+		sensData->electAngle = electAngle;
+		sensData->electAngVelo = electAngVelo;
 		break;
 	case POSMODE_SENSORLESS:
 		flgInit = 1;
-		calcElectAngleEstimate(flgInit, sVectorControlData, &sElectAngleEstimateData);
-		*electAngle = sElectAngleEstimateData.electAngleEstimate;
-		*electAngVelo = sElectAngleEstimateData.electAngVeloEstimate;
+		calcElectAngleEstimate(flgInit, sSensData, sVectorControlData, &sElectAngleEstimateData);
+		sensData->electAngle = sElectAngleEstimateData.electAngleEstimate;
+		sensData->electAngVelo = sElectAngleEstimateData.electAngVeloEstimate;
 		break;
 	default:
-		*electAngle = 0;
-		*electAngVelo = 0;
+		sensData->electAngle = 0.0f;
+		sensData->electAngVelo = 0.0f;
 		break;
 	}
 }

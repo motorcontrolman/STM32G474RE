@@ -275,7 +275,8 @@ static float FluxObserver(float* Igd, float* Vgd, float electAngVelo){
 	return angleErr;
 }
 
-void calcElectAngleEstimate(uint8_t flgInit, struct VectorControlData vectorControlData, struct ElectAngleEstimateData *electAngleEstimateData){
+void calcElectAngleEstimate(uint8_t flgInit, struct SensorData sensData, struct VectorControlData vectorControlData, struct ElectAngleEstimateData *electAngleEstimateData)
+{
 	float wc_PLL;
 	float Kp_PLL;
 	float Ki_PLL;
@@ -285,9 +286,9 @@ void calcElectAngleEstimate(uint8_t flgInit, struct VectorControlData vectorCont
 
 
 	if( flgInit == 0){ // 初期化処理
-		//*electAngVeloEstimate = electAngVelo;
-		//*electAngleEstimate = electAngle;
-		sIntegral_ElectAngleErr_Ki = electAngleEstimateData->electAngVeloEstimate;
+		electAngleEstimateData->electAngleEstimate = sensData.electAngle;
+		electAngleEstimateData->electAngVeloEstimate = sensData.electAngVelo;
+		sIntegral_ElectAngleErr_Ki = sensData.electAngVelo;
 	}
 	else{
 
