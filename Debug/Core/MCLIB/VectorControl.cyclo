@@ -1,10 +1,3 @@
-VectorControl.c:50:6:VectorControlTasks	1
-VectorControl.c:90:6:OpenLoopTasks	1
-VectorControl.c:110:13:uvw2ab	1
-VectorControl.c:116:13:ab2uvw	1
-VectorControl.c:122:13:ab2dq	1
-VectorControl.c:131:14:calcAmpFromVect	1
-VectorControl.c:140:14:calcModFromVamp	1
-VectorControl.c:147:13:dq2ab	1
-VectorControl.c:156:13:Vuvw2Duty	5
-VectorControl.c:213:13:CurrentFbControl	2
+VectorControl.c:49:6:VectorControlTasks	6
+VectorControl.c:93:6:OpenLoopTasks	6
+VectorControl.c:278:6:calcElectAngleEstimate	2

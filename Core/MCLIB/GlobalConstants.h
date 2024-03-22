@@ -34,6 +34,7 @@
 #define SQRT_1DIV3			0.577350269f
 #define DUTYUPPER			1.0f
 #define DUTYLOWER			-1.0f
+#define MODLIMIT			1.15f
 
 
 // for NIDEC Motor

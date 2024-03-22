@@ -26,8 +26,6 @@ static float sIdq_1000[2];
 static float sVdq[2];
 static float sVab[2];
 static float sVuvw[3];
-static float sVamp;
-static float sMod;
 static float sEdq[2];
 
 static float sElectAngleEstimate = 0.0f;
@@ -41,11 +39,12 @@ static inline void ab2dq(float theta, float *ab, float *dq);
 static inline void dq2ab(float theta, float *dq, float *ab);
 static inline float calcAmpFromVect(float* Vect);
 static inline float calcModFromVamp(float Vamp, float twoDivVdc);
+static inline void calcAmpPhaseModFromVoltVect(struct SensorData sensData, struct VectorControlData *vectorControlData);
+static inline void limitVoltVectAmp(struct SensorData sensData, struct VectorControlData *vectorControlData);
 static inline void Vuvw2Duty(float twoDivVdc, float *Vuvw, float *Duty);
 static inline void Vuvw2DutyforOpenWinding(float twoDivVdc, float *Vuvw, float *Duty);
-static inline void CurrentFbControl(float *Igd_ref, struct SensorData sensData, struct VectorControlData *vectorControlData, float* Vamp);
-static inline float FluxObserver(float* Igd, float* Vgd, float electAngVelo, float* Egd);
-static inline void calcElectAngleEstimate(uint8_t flgPLL, float electAngle, float electAngVelo, float *electAngleEstimate, float *electAngVeloEstimate);
+static inline void CurrentFbControl(float *Igd_ref, struct SensorData sensData, struct VectorControlData *vectorControlData);
+static inline float FluxObserver(float* Igd, float* Vgd, float electAngVelo);
 
 void VectorControlTasks(float *Idq_ref, struct SensorData sensData, struct VectorControlData *vectorControlData, float* Duty, int8_t* outputMode){
 
@@ -70,8 +69,10 @@ void VectorControlTasks(float *Idq_ref, struct SensorData sensData, struct Vecto
 
 	gLPF(Idq_ref[1], 62.8f, CARRIERCYCLE, &sIq_ref_LPF);
 	Idq_ref[1] = sIq_ref_LPF; // zanteisyori
-	CurrentFbControl(Idq_ref, sensData, vectorControlData, &sVamp);
-	sMod = calcModFromVamp(sVamp, sensData.twoDivVdc);
+	CurrentFbControl(Idq_ref, sensData, vectorControlData);
+	calcAmpPhaseModFromVoltVect(sensData, vectorControlData);
+	limitVoltVectAmp(sensData, vectorControlData);
+
 	dq2ab(sensData.electAngle, vectorControlData->Vdq, sVab);
 	ab2uvw(sVab, sVuvw);
 
@@ -84,6 +85,8 @@ void VectorControlTasks(float *Idq_ref, struct SensorData sensData, struct Vecto
 	sIdq_1000[1] = vectorControlData->Idq[1] * 1000.0f;
 
 	gLPF(vectorControlData->Idq[1], 125.6f, CARRIERCYCLE, &sIq_LPF);
+
+	sElectAngleErr = FluxObserver(vectorControlData->Idq, vectorControlData->Vdq, sensData.electAngVelo);
 
 }
 
@@ -99,12 +102,17 @@ void OpenLoopTasks(float VamRef, struct SensorData sensData, struct VectorContro
 	vectorControlData->Vdq_i[0] = vectorControlData->Vdq[0];
 	vectorControlData->Vdq_i[1] = vectorControlData->Vdq[1];
 
+	calcAmpPhaseModFromVoltVect(sensData, vectorControlData);
+	limitVoltVectAmp(sensData, vectorControlData);
+
 	dq2ab(sensData.electAngle, vectorControlData->Vdq, sVab);
 	ab2uvw(sVab, sVuvw);
 	Vuvw2Duty(sensData.twoDivVdc, sVuvw, Duty);
 
 	sIdq_1000[0] = sIdq[0] * 1000.0f;
 	sIdq_1000[1] = sIdq[1] * 1000.0f;
+
+	sElectAngleErr = FluxObserver(vectorControlData->Idq, vectorControlData->Vdq, sensData.electAngVelo);
 }
 
 static void uvw2ab(float* uvw, float* ab){
@@ -142,6 +150,26 @@ static float calcModFromVamp(float Vamp, float twoDivVdc){
 
 	mod = Vamp * twoDivVdc * SQRT_2DIV3;
 	return mod;
+}
+
+static inline void calcAmpPhaseModFromVoltVect(struct SensorData sensData, struct VectorControlData *vectorControlData){
+	vectorControlData->Vphase = atan2f(vectorControlData->Vdq[1], vectorControlData->Vdq[0]);
+	vectorControlData->Vamp = calcAmpFromVect(vectorControlData->Vdq);
+	vectorControlData->Mod = calcModFromVamp(vectorControlData->Vamp, sensData.twoDivVdc);
+}
+
+static inline void limitVoltVectAmp(struct SensorData sensData, struct VectorControlData *vectorControlData){
+	float VampLimit;
+
+	if( vectorControlData->Mod > MODLIMIT ){
+		VampLimit = sensData.Vdc * SQRT3DIV2_DIV2 * MODLIMIT;
+		vectorControlData->Vdq[0] = VampLimit * cosf(vectorControlData->Vphase);
+		vectorControlData->Vdq_i[0] = vectorControlData->Vdq[0] - vectorControlData->Vdq_FF[0];
+		vectorControlData->Vdq[1] = VampLimit * sinf(vectorControlData->Vphase);
+		vectorControlData->Vdq_i[1] = vectorControlData->Vdq[1] - vectorControlData->Vdq_FF[1];
+		vectorControlData->Mod = MODLIMIT;
+
+	}
 }
 
 static void dq2ab(float theta, float* dq, float* ab){
@@ -210,19 +238,17 @@ static inline void Vuvw2DutyforOpenWinding(float twoDivVdc, float *Vuvw, float *
 }
 
 
-static void CurrentFbControl(float *Igd_ref, struct SensorData sensData, struct VectorControlData *vectorControlData, float* Vamp){
+static void CurrentFbControl(float *Igd_ref, struct SensorData sensData, struct VectorControlData *vectorControlData){
 	float Ierr[2];
 	float Kp;
 	float Kig;
 	float Kid;
-	float VampLimit;
-	float Vphase;
 	float wc;
 
 	wc = 10.0f * TWOPI;
 
-	Kp = La * wc;
-	Kig = Ra * wc * CARRIERCYCLE;
+	Kp = La * wc;//La * wc;//2 * wc - Ra/La;
+	Kig = Ra * wc * CARRIERCYCLE;//La * wc * wc * CARRIERCYCLE;
 	Kid = Kig;
 
 	Ierr[0] = Igd_ref[0] - vectorControlData->Idq[0];
@@ -231,66 +257,55 @@ static void CurrentFbControl(float *Igd_ref, struct SensorData sensData, struct 
 	vectorControlData->Vdq_i[0] += Kig * Ierr[0];
 	vectorControlData->Vdq_i[1] += Kid * Ierr[1];
 
-	vectorControlData->Vdq[0] = Kp * Ierr[0] + vectorControlData->Vdq_i[0];
-	vectorControlData->Vdq[1] = Kp * Ierr[1] + vectorControlData->Vdq_i[1];// + Ke * electAngVelo;// + Vgd[1] + Kid * Ierr[1] + ;
+	vectorControlData->Vdq_FF[0] = -1.0f *sensData.electAngVelo * La * vectorControlData->Idq[1];
+	vectorControlData->Vdq_FF[1] = sensData.electAngVelo * ( Ke + La * vectorControlData->Idq[0]);
 
-	Vphase = atan2f(vectorControlData->Vdq[1], vectorControlData->Vdq[0]);
+	vectorControlData->Vdq[0] = Kp * Ierr[0] + vectorControlData->Vdq_i[0] + vectorControlData->Vdq_FF[0];
+	vectorControlData->Vdq[1] = Kp * Ierr[1] + vectorControlData->Vdq_i[1] + vectorControlData->Vdq_FF[1];
 
-	*Vamp = calcAmpFromVect(vectorControlData->Vdq);
-
-	VampLimit = sensData.Vdc * SQRT3DIV2_DIV2 * 1.15f;
-	if( *Vamp > VampLimit ){
-		vectorControlData->Vdq[0] = VampLimit * cosf(Vphase);
-		vectorControlData->Vdq_i[0] = vectorControlData->Vdq[0];
-		vectorControlData->Vdq[1] = VampLimit * sinf(Vphase);
-		vectorControlData->Vdq_i[1] = vectorControlData->Vdq[1];// -  Ke * sensData.electAngVelo;
-
-	}
 }
 
 
-static float FluxObserver(float* Igd, float* Vgd, float electAngVelo, float* Egd){
+static float FluxObserver(float* Igd, float* Vgd, float electAngVelo){
 	float angleErr;
-	//Egd[0] = Vgd[0] - Ra * Igd[0];
-	//Egd[1] = Vgd[1] - Ra * Igd[1];
+	float Egd[2];
 	Egd[0] = Vgd[0] - Ra * Igd[0] + La * electAngVelo * Igd[1];
 	Egd[1] = Vgd[1] - Ra * Igd[1] - La * electAngVelo * Igd[0];
-	angleErr = atan2f(-1.0f * sEdq[0], sEdq[1]); //推定q軸を基準とした実q軸との誤差を算出
-	//arm_atan2_f32(Egd[0], Egd[1], &result);
-	//Theta_est = atan2f(Egd[1], Egd[0]);
+	angleErr = atan2f(-1.0f * Egd[0], Egd[1]); //推定q軸を基準とした実q軸との誤差を算出
 	return angleErr;
 }
 
-static void calcElectAngleEstimate(uint8_t flgPLL, float electAngle, float electAngVelo, float *electAngleEstimate, float *electAngVeloEstimate){
+void calcElectAngleEstimate(uint8_t flgInit, struct VectorControlData vectorControlData, struct ElectAngleEstimateData *electAngleEstimateData){
 	float wc_PLL;
 	float Kp_PLL;
 	float Ki_PLL;
 	float Ts_PLL;
 
-	sElectAngleErr = FluxObserver(sIdq, sVdq, *electAngleEstimate, sEdq);
+	electAngleEstimateData->electAngleErr = FluxObserver(vectorControlData.Idq, vectorControlData.Vdq, electAngleEstimateData->electAngVeloEstimate);
 
-	if( flgPLL == 0){
-		*electAngVeloEstimate = electAngVelo;
-		*electAngleEstimate = electAngle;
-		sIntegral_ElectAngleErr_Ki = electAngVelo;
+
+	if( flgInit == 0){ // 初期化処理
+		//*electAngVeloEstimate = electAngVelo;
+		//*electAngleEstimate = electAngle;
+		sIntegral_ElectAngleErr_Ki = electAngleEstimateData->electAngVeloEstimate;
 	}
 	else{
 
 		// Calculate PLL Gain based on Electrical Angle Velocity
-		wc_PLL = 50.0f * TWOPI;//sElectAngVeloEstimate * 0.5f;
+		wc_PLL = 100.0f * TWOPI;//sElectAngVeloEstimate * 0.5f;
 		Ts_PLL = CARRIERCYCLE;
 		Kp_PLL = wc_PLL;
 		Ki_PLL = 0.2f * wc_PLL * wc_PLL * Ts_PLL;
 
 		// Estimate Electrical Angle & Velocity using PLL
-		*electAngleEstimate += (*electAngVeloEstimate) * CARRIERCYCLE;
-		*electAngleEstimate = gfWrapTheta(*electAngleEstimate);
+		electAngleEstimateData->electAngleEstimate += (electAngleEstimateData->electAngVeloEstimate) * CARRIERCYCLE;
+		electAngleEstimateData->electAngleEstimate = gfWrapTheta(electAngleEstimateData->electAngleEstimate);
 
 		// wrap Electrical Angle Err
-		sElectAngleErr = gfWrapTheta(sElectAngleErr);
+		electAngleEstimateData->electAngleErr = gfWrapTheta(electAngleEstimateData->electAngleErr);
 
 		//PLL
-		*electAngVeloEstimate = cfPhaseLockedLoop(sElectAngleErr, Kp_PLL, Ki_PLL, &sIntegral_ElectAngleErr_Ki);
+		electAngleEstimateData->electAngVeloEstimate = cfPhaseLockedLoop(electAngleEstimateData->electAngleErr, Kp_PLL, Ki_PLL, &sIntegral_ElectAngleErr_Ki);
 
 	}
 

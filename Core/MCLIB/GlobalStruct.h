@@ -20,7 +20,16 @@ struct VectorControlData {
     float Idq[2];   // 電気角
     float Vdq[2];      // 3相電流
     float Vdq_i[2];
+    float Vdq_FF[2];
+    float Vamp;
+    float Vphase;
+    float Mod;
 };
 
+struct ElectAngleEstimateData {
+    float electAngleErr;   // 電気角誤差
+    float electAngleEstimate;
+    float electAngVeloEstimate;
+};
 
 #endif /* MCLIB_GLOBALSTRUCT_H_ */
