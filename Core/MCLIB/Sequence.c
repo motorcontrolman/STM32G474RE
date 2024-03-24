@@ -44,7 +44,6 @@ void Sequence(void){
 	//read IO signals
 	gButton1 = readButton1();
 	gVolume = readVolume();
-
 	readHallSignal(gHall);
 	readElectFreqFromHallSignal(&gElectFreq);
 
@@ -59,17 +58,22 @@ void Sequence(void){
 		sElectAngVeloRefRateLimit = 0;
 	}
 	else {
+		//sElectAngVeloRef = 2000.0f * gVolume;
+		if(gButton1 == 1)
+		{
+			sElectAngVeloRef = 1000.0f;
+			gRateLimit(sElectAngVeloRef, 1000.0f, CARRIERCYCLE, &sElectAngVeloRefRateLimit);
+		}
+		else
+			sElectAngVeloRefRateLimit = 0;
+
 		// For Sensor Drive
 		//slctPosMode(gElectFreq, &sPosMode);
 		//slctDrvMode(gElectFreq, &sDrvMode);
 
 		// For Sensorless Drive
-		sElectAngVeloRef = 2000.0f * gVolume;//1000.0f * gButton1;//2000.0f * gVolume;
-		gRateLimit(sElectAngVeloRef, 200.0f, CARRIERCYCLE, &sElectAngVeloRefRateLimit);
-		//sElectAngVeloRefRateLimit = gButton1 * sElectAngVeloRefRateLimit;
-
-		slctPosModeForSensorless(sElectAngVeloRefRateLimit, &sPosMode);
-		slctDrvModeForSensorless(sElectAngVeloRefRateLimit, &sDrvMode);
+		slctPosModeForSensorless(sSensData.electAngVelo, &sPosMode);
+		slctDrvModeForSensorless(sSensData.electAngVelo, &sDrvMode);
 	}
 
 	slctElectAngleFromPosMode(sPosMode, &sSensData);
@@ -82,8 +86,6 @@ void Sequence(void){
 }
 
 void slctPosMode(float electFreq, uint8_t* posMode){
-
-	*posMode = POSMODE_FREERUN;
 
 	if(*posMode != POSMODE_HALL_PLL){
 		if (electFreq > ELECTFREQ_VALIDPLL)
@@ -117,18 +119,35 @@ void slctDrvMode(float electFreq, uint8_t* drvMode){
 }
 
 static void slctPosModeForSensorless(float electAngVelo, uint8_t* posMode){
-	if (electAngVelo < 200.0f)
-		*posMode = POSMODE_FREERUN;
-	else
-		*posMode = POSMODE_SENSORLESS;
+
+	if(*posMode != POSMODE_SENSORLESS){
+		if (electAngVelo > ELECTANGVELO_FREERUN2SENSORLESS)
+			*posMode = POSMODE_SENSORLESS;
+		else
+			*posMode = POSMODE_FREERUN;
+	}
+	else if(*posMode == POSMODE_SENSORLESS){
+		if (electAngVelo < ELECTANGVELO_SENSORLESS2FREERUN)
+			*posMode = POSMODE_FREERUN;
+		else
+			*posMode = POSMODE_SENSORLESS;
+	}
 }
 
 static void slctDrvModeForSensorless(float electAngVelo, uint8_t* drvMode){
-	if (electAngVelo < 400.0f)
-	//if(gButton1 == 0)
-		*drvMode = DRVMODE_OPENLOOP;
-	else
-		*drvMode = DRVMODE_VECTORCONTROL;
+
+	if(*drvMode != DRVMODE_VECTORCONTROL){
+		if (electAngVelo > ELECTANGVELO_OPENLOOP2VECTORCONTROL)
+			*drvMode = DRVMODE_VECTORCONTROL;
+		else
+			*drvMode = DRVMODE_OPENLOOP;
+	}
+	else if(*drvMode == DRVMODE_VECTORCONTROL){
+		if (electAngVelo < ELECTANGVELO_VECTORCONTROL2OPENLOOP)
+			*drvMode = DRVMODE_OPENLOOP;
+		else
+			*drvMode = DRVMODE_VECTORCONTROL;
+	}
 }
 
 static void slctElectAngleFromPosMode(uint8_t posMode, struct SensorData *sensData){
@@ -141,7 +160,6 @@ static void slctElectAngleFromPosMode(uint8_t posMode, struct SensorData *sensDa
 	case POSMODE_STOP:
 		sensData->electAngle = 0.0f;
 		sensData->electAngVelo = 0.0f;
-		sElectAngVeloRef = 0.0f;
 		break;
 
 	case POSMODE_FREERUN:
@@ -196,7 +214,7 @@ void slctCntlFromDrvMode(uint8_t drvMode, struct SensorData sensData, struct Vec
 
 	Idq_ref[0] = sId_ref_i;
 
-	Idq_ref[1] = IQREFMAX * gVolume;
+	Idq_ref[1] = IQREFMAX * gVolume * gButton1;
 
 	switch(drvMode){
 		case DRVMODE_OFFDUTY:

@@ -27,6 +27,7 @@ struct VectorControlData {
 };
 
 struct ElectAngleEstimateData {
+	float wc_PLL;
     float electAngleErr;   // 電気角誤差
     float electAngleEstimate;
     float electAngVeloEstimate;
