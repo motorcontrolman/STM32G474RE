@@ -48,7 +48,7 @@ void Sequence(void){
 	readElectFreqFromHallSignal(&gElectFreq);
 
 	readCurrent(gIuvw_AD, sSensData.Iuvw);
-	sSensData.Vdc = readVdc();
+	sSensData.Vdc = 10.0f;//readVdc();
 	sSensData.twoDivVdc = gfDivideAvoidZero(2.0f, sSensData.Vdc, 1.0f);;
 
 	if(sInitCnt < 500){
@@ -214,14 +214,14 @@ void slctCntlFromDrvMode(uint8_t drvMode, struct SensorData sensData, struct Vec
 
 	Idq_ref[0] = sId_ref_i;
 
-	Idq_ref[1] = IQREFMAX * gVolume * gButton1;
+	Idq_ref[1] = IQREFMAX * gButton1;// * gVolume;
 
 	switch(drvMode){
 		case DRVMODE_OFFDUTY:
 			gOffDuty(Duty, outputMode);
 			break;
 		case DRVMODE_OPENLOOP:
-			VamRef = sSensData.Vdc * SQRT3DIV2_DIV2 * ( 0.3f + 0.7f * gVolume);//sElectAngVeloRefRateLimit * 0.001 );
+			VamRef = sSensData.Vdc * SQRT3DIV2_DIV2 * ( 0.2f + 0.8f * sElectAngVeloRefRateLimit*0.001f);//sElectAngVeloRefRateLimit * 0.001 );
 			OpenLoopTasks(VamRef, sensData, vectorControlData, Duty, outputMode);
 			break;
 		case DRVMODE_VECTORCONTROL:
