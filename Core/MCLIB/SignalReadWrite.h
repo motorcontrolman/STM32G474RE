@@ -11,9 +11,9 @@
 #include <stdint.h>
 #include "main.h"
 
-#define IU_ADOffSET			1904
-#define IV_ADOffSET			1919
-#define IW_ADOffSET			1916
+#define IU_ADOffSET			2013
+#define IV_ADOffSET			2004
+#define IW_ADOffSET			2027
 #define IU2_ADOffSET			1986
 #define IV2_ADOffSET			1967
 #define IW2_ADOffSET			1974

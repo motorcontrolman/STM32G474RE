@@ -61,8 +61,8 @@ void Sequence(void){
 		//sElectAngVeloRef = 2000.0f * gVolume;
 		if(gButton1 == 1)
 		{
-			sElectAngVeloRef = 1000.0f;
-			gRateLimit(sElectAngVeloRef, 1000.0f, CARRIERCYCLE, &sElectAngVeloRefRateLimit);
+			sElectAngVeloRef = 300.0f;
+			gRateLimit(sElectAngVeloRef, 500.0f, CARRIERCYCLE, &sElectAngVeloRefRateLimit);
 		}
 		else
 			sElectAngVeloRefRateLimit = 0;
@@ -221,7 +221,7 @@ void slctCntlFromDrvMode(uint8_t drvMode, struct SensorData sensData, struct Vec
 			gOffDuty(Duty, outputMode);
 			break;
 		case DRVMODE_OPENLOOP:
-			VamRef = sSensData.Vdc * SQRT3DIV2_DIV2 * ( 0.2f + 0.8f * sElectAngVeloRefRateLimit*0.001f);//sElectAngVeloRefRateLimit * 0.001 );
+			VamRef = sSensData.Vdc * SQRT3DIV2_DIV2 * ( 0.05f + 0.05f * sElectAngVeloRefRateLimit*0.0005f);//sElectAngVeloRefRateLimit * 0.001 );
 			OpenLoopTasks(VamRef, sensData, vectorControlData, Duty, outputMode);
 			break;
 		case DRVMODE_VECTORCONTROL:

@@ -38,8 +38,8 @@
 
 
 // for NIDEC Motor
-#define Ra					1.680596498f
-#define La					0.00048f
+#define Ra					0.96f
+#define La					0.00048f * 0.4
 #define Ke					1.03E-03f
 
 // for DN Motor

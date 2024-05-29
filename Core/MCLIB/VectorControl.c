@@ -261,7 +261,7 @@ void calcElectAngleEstimate(uint8_t flgInit, struct SensorData sensData, struct 
 
 		// Calculate PLL Gain based on Electrical Angle Velocity
 		wc_PLL = electAngleEstimateData->wc_PLL;
-		gRateLimit(100.0f * TWOPI, 100.0f, CARRIERCYCLE, &wc_PLL);
+		gRateLimit(200.0f * TWOPI, 50.0f, CARRIERCYCLE, &wc_PLL);
 		electAngleEstimateData->wc_PLL = wc_PLL;
 
 		Ts_PLL = CARRIERCYCLE;
