@@ -48,7 +48,7 @@ void Sequence(void){
 	readElectFreqFromHallSignal(&gElectFreq);
 
 	readCurrent(gIuvw_AD, sSensData.Iuvw);
-	sSensData.Vdc = 10.0f;//readVdc();
+	sSensData.Vdc = readVdc();
 	sSensData.twoDivVdc = gfDivideAvoidZero(2.0f, sSensData.Vdc, 1.0f);;
 
 	if(sInitCnt < 500){
@@ -68,12 +68,12 @@ void Sequence(void){
 			sElectAngVeloRefRateLimit = 0;
 
 		// For Sensor Drive
-		//slctPosMode(gElectFreq, &sPosMode);
-		//slctDrvMode(gElectFreq, &sDrvMode);
+		slctPosMode(gElectFreq, &sPosMode);
+		slctDrvMode(gElectFreq, &sDrvMode);
 
 		// For Sensorless Drive
-		slctPosModeForSensorless(sSensData.electAngVelo, &sPosMode);
-		slctDrvModeForSensorless(sSensData.electAngVelo, &sDrvMode);
+		//slctPosModeForSensorless(sSensData.electAngVelo, &sPosMode);
+		//slctDrvModeForSensorless(sSensData.electAngVelo, &sDrvMode);
 	}
 
 	slctElectAngleFromPosMode(sPosMode, &sSensData);
@@ -221,7 +221,8 @@ void slctCntlFromDrvMode(uint8_t drvMode, struct SensorData sensData, struct Vec
 			gOffDuty(Duty, outputMode);
 			break;
 		case DRVMODE_OPENLOOP:
-			VamRef = sSensData.Vdc * SQRT3DIV2_DIV2 * ( 0.05f + 0.05f * sElectAngVeloRefRateLimit*0.0005f);//sElectAngVeloRefRateLimit * 0.001 );
+			//VamRef = sSensData.Vdc * SQRT3DIV2_DIV2 * ( 0.1f + 0.3f * sElectAngVeloRefRateLimit*0.0005f);//sElectAngVeloRefRateLimit * 0.001 );
+			VamRef = sSensData.Vdc * SQRT3DIV2_DIV2 * 0.5f * gButton1;;
 			OpenLoopTasks(VamRef, sensData, vectorControlData, Duty, outputMode);
 			break;
 		case DRVMODE_VECTORCONTROL:
